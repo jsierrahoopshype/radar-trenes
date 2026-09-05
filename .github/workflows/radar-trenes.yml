@@ -1,0 +1,66 @@
+name: Radar de trenes
+
+on:
+  schedule:
+    # 05:10 hora peninsular en invierno, 06:10 en verano. Antes de que corra el
+    # radar de Cowork, para que se encuentre el JSON ya fresco.
+    - cron: "10 4 * * *"
+  workflow_dispatch:        # boton para lanzarlo a mano desde la pestana Actions
+
+permissions:
+  contents: write           # necesario para que el propio workflow commitee el JSON
+
+concurrency:
+  group: radar-trenes
+  cancel-in-progress: false
+
+jobs:
+  barrer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Barrer Renfe
+        id: barrido
+        continue-on-error: true      # que un fallo del scraper no impida publicar la alerta
+        run: python scraper.py
+
+      - name: Guardar diagnostico si algo ha fallado
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico
+          path: diagnostico/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Publicar precios-trenes.json
+        if: always()
+        run: |
+          git config user.name  "radar-trenes"
+          git config user.email "radar-trenes@users.noreply.github.com"
+          git add precios-trenes.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios de precio hoy."
+          else
+            git commit -m "Precios de tren $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Fallar si el barrido fallo
+        if: steps.barrido.outcome == 'failure'
+        run: |
+          echo "El scraper fallo. El JSON se ha publicado igualmente con la alerta puesta."
+          exit 1
