@@ -1,0 +1,58 @@
+{
+  "origen": { "nombre": "Madrid (todas)", "codigo": "MADRI" },
+  "pasajeros": { "adultos": 2, "ninos": 2, "edades_ninos": [7, 9] },
+
+  "horario_limpio": {
+    "_comentario": "Mismo criterio que usa el radar para vuelos. Ida: no llegar despues de esta hora. Vuelta: no salir antes de esta hora ni llegar despues del tope.",
+    "ida_llegada_maxima": "23:00",
+    "vuelta_salida_minima": "10:00",
+    "vuelta_llegada_maxima": "23:00"
+  },
+
+  "ventanas": [
+    {
+      "id": "noviembre",
+      "salida": "2026-11-06",
+      "vuelta": "2026-11-09",
+      "ida_salida_minima": "17:00",
+      "_comentario": "Puente de la Almudena. Viernes 6 es lectivo, se sale despues del cole."
+    },
+    {
+      "id": "diciembre",
+      "salida": "2026-12-04",
+      "vuelta": "2026-12-08",
+      "ida_salida_minima": "15:00"
+    },
+    {
+      "id": "febrero",
+      "salida": "2027-02-12",
+      "vuelta": "2027-02-15",
+      "ida_salida_minima": "07:00",
+      "_comentario": "12 y 15 no lectivos: se puede salir por la manana."
+    }
+  ],
+
+  "destinos": [
+    { "nombre": "Cuenca",      "codigo": "CUENC", "referencia": 71 },
+    { "nombre": "Segovia",     "codigo": "SEGOV", "referencia": 89 },
+    { "nombre": "Toledo",      "codigo": "TOLED", "referencia": 89 },
+    { "nombre": "Alicante",    "codigo": "ALICA", "referencia": 106 },
+    { "nombre": "Albacete",    "codigo": "ALBAC", "referencia": 108 },
+    { "nombre": "Valencia",    "codigo": "VALEN", "referencia": 116 },
+    { "nombre": "Zaragoza",    "codigo": "ZARAG", "referencia": 126 },
+    { "nombre": "Huesca",      "codigo": "HUESC", "referencia": 130 },
+    { "nombre": "Caceres",     "codigo": "CACER", "referencia": 139 },
+    { "nombre": "Murcia",      "codigo": "MURCI", "referencia": 165 },
+    { "nombre": "Ciudad Real", "codigo": "CIUDA", "referencia": 168 },
+    { "nombre": "Badajoz",     "codigo": "BADAJ", "referencia": 189 },
+    { "nombre": "Malaga",      "codigo": "MALAG", "referencia": 193 },
+    { "nombre": "Lleida",      "codigo": "LLEID", "referencia": 196 },
+    { "nombre": "Valladolid",  "codigo": "VALLA", "referencia": 199 },
+    { "nombre": "Tarragona",   "codigo": "TARRA", "referencia": 216 },
+    { "nombre": "Barcelona",   "codigo": "BARCE", "referencia": 221 },
+    { "nombre": "Sevilla",     "codigo": "SEVIL", "referencia": 224 },
+    { "nombre": "Castellon",   "codigo": "CASTE", "referencia": 236 },
+    { "nombre": "Girona",      "codigo": "GIRON", "referencia": 263 },
+    { "nombre": "Granada",     "codigo": "GRANA", "referencia": 351 }
+  ]
+}
