@@ -5,8 +5,12 @@ on:
     - cron: "10 4 * * *"
   workflow_dispatch:
     inputs:
+      limite:
+        description: "Cuantos destinos barrer (3 para validar rapido, 0 = todos)"
+        type: string
+        default: "3"
       solo_sonda:
-        description: "Solo diagnostico (1 min, no barre precios)"
+        description: "Solo diagnostico, sin barrer precios"
         type: boolean
         default: false
 
@@ -20,7 +24,7 @@ concurrency:
 jobs:
   barrer:
     runs-on: ubuntu-latest
-    timeout-minutes: 25          # antes 45 y se los comia enteros fallando
+    timeout-minutes: 50        # dos busquedas por ruta, hace falta margen
 
     steps:
       - uses: actions/checkout@v4
@@ -41,9 +45,9 @@ jobs:
           pip install playwright
           python -m playwright install --with-deps chromium
 
-      # Siempre corre. Tarda un minuto y es lo que permite arreglar selectores
-      # sin adivinar cuando Renfe cambia el maquetado.
+      # Solo cuando se pide expresamente: en marcha normal es un minuto perdido.
       - name: Sonda de diagnostico
+        if: ${{ inputs.solo_sonda == true }}
         continue-on-error: true
         run: python sonda.py
 
@@ -51,6 +55,8 @@ jobs:
         id: barrido
         if: ${{ inputs.solo_sonda != true }}
         continue-on-error: true
+        env:
+          LIMITE: ${{ inputs.limite || '0' }}
         run: python scraper.py
 
       - name: Guardar diagnostico
@@ -66,7 +72,7 @@ jobs:
         if: always()
         run: |
           if [ ! -f precios-trenes.json ]; then
-            echo "No hay precios-trenes.json que publicar (la sonda no lo genera)."
+            echo "No hay precios-trenes.json que publicar."
             exit 0
           fi
           git config user.name  "radar-trenes"
@@ -83,7 +89,26 @@ jobs:
         if: always()
         run: |
           if [ -f precios-trenes.json ]; then
-            echo "### Resultado del barrido" >> $GITHUB_STEP_SUMMARY
-            python -c "import json;d=json.load(open('precios-trenes.json'));print('Alerta:', d.get('alerta') or 'ninguna')" >> $GITHUB_STEP_SUMMARY
+            python - <<'PY' >> $GITHUB_STEP_SUMMARY
+          import json
+          d = json.load(open('precios-trenes.json'))
+          r = d.get('resumen', {})
+          print('### Resultado del barrido\n')
+          print(f"- Con precio: **{r.get('con_precio', 0)}**")
+          print(f"- Fuera de venta: {r.get('fuera_de_venta', 0)}")
+          print(f"- Fallidas: {r.get('fallidas', 0)}")
+          print(f"\nAlerta: {d.get('alerta') or 'ninguna'}\n")
+          for vid, v in (d.get('ventanas') or {}).items():
+              con = [x for x in v['rutas'] if x.get('precio')]
+              if not con:
+                  continue
+              print(f"\n**{vid}** ({v['salida']} a {v['vuelta']})\n")
+              print('| Destino | Precio | Referencia | Var. |')
+              print('|---|---:|---:|---:|')
+              for x in sorted(con, key=lambda a: a['precio']):
+                  var = x.get('variacion_pct')
+                  print(f"| {x['destino']} | {x['precio']} € | "
+                        f"{x.get('referencia') or '-'} | "
+                        f"{(str(var) + ' %') if var is not None else '-'} |")
+          PY
           fi
-          echo "Descarga el artefacto 'diagnostico' si algo ha fallado." >> $GITHUB_STEP_SUMMARY
