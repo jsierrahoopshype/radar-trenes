@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-06T11:34:16+00:00",
+  "generado": "2026-09-06T12:19:45+00:00",
   "alerta": "3 rutas con pasajeros mal fijados: precios NO fiables. Mirar pasajeros_leidos.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
