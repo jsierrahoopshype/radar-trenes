@@ -2,7 +2,7 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 8.
+Version 9.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
@@ -20,7 +20,12 @@ Historial, para no repetir errores:
            de 4 personas daba -74,6 % en Cuenca: un chollo fantasma puro.
         c) Febrero devolvia parrilla sin trenes (aun no esta a la venta) y eso
            se contaba como averia, abortando el barrido entero.
-  v8  a) Los pasajeros se fijan por DELTA sobre lo que ya hay, no sumando.
+  v8  Delta de pasajeros (bien) + unidades por persona (bien) + SinTrenes (bien),
+      PERO los pasajeros seguian saliendo "1 adulto" en la primera ventana: el
+      web component no esta hidratado en la primera carga y los clics se pierden.
+  v9  Se espera a que exista el boton de sumar antes de pulsarlo, y se verifica
+      con hasta 3 reintentos. Nunca se da por bueno sin releer.
+      a) Los pasajeros se fijan por DELTA sobre lo que ya hay, no sumando.
       b) UNIDADES: se compara precio por persona contra referencia/4. Sin
          inventar nada. Nunca se compara un "desde" con un total de cuatro.
       c) Parrilla sin trenes = SinTrenes: ni cuenta como fallo ni aborta, y si
@@ -309,56 +314,73 @@ def contar_pasajeros(texto):
 
 def poner_pasajeros(page, pax):
     """
-    Ajusta a 2 adultos + 2 niños POR DIFERENCIA sobre lo que ya hay.
-    Renfe recuerda la seleccion entre busquedas: sumar a ciegas producia
-    3+4 y luego 4+5, que fue el fallo de la v7.
+    Deja el buscador en 2 adultos + 2 ninos y lo VERIFICA, con reintentos.
+
+    Fallo de la v8 (6 sep): en noviembre salia "1 adulto" y en diciembre
+    "2 adultos, 2 ninos". La asimetria delataba una carrera:
+    <rf-passengers-integration> es un web component y en la primera carga del
+    navegador tarda en hidratarse, asi que los clics caian en el vacio. Diciembre
+    "funcionaba" solo porque Renfe recordaba el 2+2 de antes y el atajo de
+    "ya esta correcto" devolvia True sin tocar nada: heredado, no logrado.
+
+    Ahora: se espera a que el boton de sumar EXISTA antes de pulsarlo, y se
+    reintenta hasta 3 veces comprobando el resultado. Nunca se da por bueno un
+    ajuste sin releerlo.
     """
-    actual_txt = resumen_pasajeros(page)
-    a_hay, n_hay = contar_pasajeros(actual_txt)
-    a_quiero, n_quiero = pax["adultos"], pax["ninos"]
+    objetivo = (pax["adultos"], pax["ninos"])
 
-    if (a_hay, n_hay) == (a_quiero, n_quiero):
-        return True, actual_txt or f"{a_hay} adultos, {n_hay} niños"
+    for intento in range(3):
+        txt = resumen_pasajeros(page)
+        if contar_pasajeros(txt) == objetivo:
+            return True, txt
 
-    try:
-        click_robusto(page, "#passengersSelection", timeout=6000)
-        page.wait_for_timeout(700)
-    except Exception:
-        return False, resumen_pasajeros(page)
-
-    def pulsar(sel, veces):
-        for _ in range(max(0, veces)):
-            try:
-                loc = page.locator(sel).first
-                if not (loc.count() and loc.is_visible()):
-                    return
-                loc.click(timeout=3000)
-                page.wait_for_timeout(300)
-            except Exception:
-                return
-
-    if a_quiero > a_hay:
-        pulsar("[aria-label='Añadir adulto']", a_quiero - a_hay)
-    elif a_quiero < a_hay:
-        pulsar("[aria-label='Eliminar adulto']", a_hay - a_quiero)
-
-    if n_quiero > n_hay:
-        pulsar("[aria-label='Añadir niño mayor de 4']", n_quiero - n_hay)
-    elif n_quiero < n_hay:
-        pulsar("[aria-label='Eliminar niño mayor de 4']", n_hay - n_quiero)
-
-    try:
-        page.click("button:has-text('Listo')", timeout=4000)
-    except Exception:
         try:
-            page.keyboard.press("Escape")
+            click_robusto(page, "#passengersSelection", timeout=6000)
+            # Hidratacion: hasta que este boton no existe, los clics no cuentan.
+            page.wait_for_selector("[aria-label='Añadir adulto']", timeout=8000)
+            page.wait_for_timeout(400)
         except Exception:
-            pass
-    page.wait_for_timeout(500)
+            page.wait_for_timeout(1000)
+            continue
+
+        a_hay, n_hay = contar_pasajeros(resumen_pasajeros(page))
+        a_qui, n_qui = objetivo
+
+        def pulsar(sel, veces):
+            for _ in range(max(0, veces)):
+                try:
+                    loc = page.locator(sel).first
+                    if not (loc.count() and loc.is_visible()):
+                        return
+                    loc.click(timeout=3000)
+                    page.wait_for_timeout(350)
+                except Exception:
+                    return
+
+        if a_qui > a_hay:
+            pulsar("[aria-label='Añadir adulto']", a_qui - a_hay)
+        elif a_qui < a_hay:
+            pulsar("[aria-label='Eliminar adulto']", a_hay - a_qui)
+
+        if n_qui > n_hay:
+            pulsar("[aria-label='Añadir niño mayor de 4']", n_qui - n_hay)
+        elif n_qui < n_hay:
+            pulsar("[aria-label='Eliminar niño mayor de 4']", n_hay - n_qui)
+
+        try:
+            page.click("button:has-text('Listo')", timeout=4000)
+        except Exception:
+            try:
+                page.keyboard.press("Escape")
+            except Exception:
+                pass
+        page.wait_for_timeout(600)
+
+        if contar_pasajeros(resumen_pasajeros(page)) == objetivo:
+            return True, resumen_pasajeros(page)
 
     final = resumen_pasajeros(page)
-    ok = contar_pasajeros(final) == (a_quiero, n_quiero)
-    return ok, final
+    return contar_pasajeros(final) == objetivo, final
 
 
 def buscar_un_sentido(page, origen, destino, fecha, pax):
