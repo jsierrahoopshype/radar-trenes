@@ -2,16 +2,20 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Cambios respecto a la primera version, tras el fallo del 5 sep:
-  - SE RINDE A LA TERCERA. Antes insistia 63 veces con el mismo error y se comia
-    los 45 minutos del job. Ahora, si fallan 3 rutas seguidas, aborta y lo dice.
-  - Elige la fecha probando varias estrategias, y si ninguna casa, navega el
-    calendario por texto (leer cabecera de mes, pulsar siguiente, pinchar el dia).
-    Eso no depende de como Renfe llame a sus clases.
-  - Escribe el JSON AL EMPEZAR, no solo al acabar, para que una cancelacion no
-    deje al radar sin fichero.
-  - Diagnostico pequeno: capturas de pantalla visible, no de pagina completa, y
-    solo de los 3 primeros fallos. El zip pasa de 204 MB a menos de 2 MB.
+Version 3, ya con el DOM real de Renfe delante (sonda del 5 sep 2026).
+
+Lo que la sonda enseno y aqui esta aplicado:
+  - Renfe usa Lightpick. Las celdas son .lightpick__day con data-time en epoch
+    MILISEGUNDOS Y EN HORA LOCAL DE MADRID, no UTC. Ese era el fallo: yo calculaba
+    UTC y me pasaba una hora (dos en horario de verano), asi que no casaba nunca.
+  - [data-date] no existe en Renfe. Fuera.
+  - La cabecera del mes viene pegada: "Septiembre2026", sin espacio.
+  - #origin, #destination, #first-input, .lightpick__next-action y
+    button:has-text('Buscar billete') existen y son los buenos.
+
+Y una distincion que antes no habia: una fecha que existe pero sale is-disabled
+NO es una averia, es que Renfe todavia no la vende (abre a unos 4 meses). Eso no
+cuenta para el contador de rendicion.
 """
 
 import json
@@ -20,6 +24,7 @@ import sys
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
@@ -29,34 +34,32 @@ SALIDA = RAIZ / "precios-trenes.json"
 DIAG = RAIZ / "diagnostico"
 
 RENFE = "https://www.renfe.com/es/es"
-T = 20_000                 # timeout por accion: corto a proposito
-FALLOS_SEGUIDOS_MAX = 3    # a la tercera nos rendimos
+MADRID = ZoneInfo("Europe/Madrid")
+T = 20_000
+FALLOS_SEGUIDOS_MAX = 3
 MAX_DIAGNOSTICOS = 3
 
-MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
-         "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-
 SEL = {
-    "origen": ["#origin", "#origin-input", "input[name='origin']",
-               "input[placeholder*='Origen']"],
-    "destino": ["#destination", "#destination-input", "input[name='destination']",
-                "input[placeholder*='Destino']"],
-    "abrir_cal": [".rf-daterange__input", "#first-input", ".lightpick__input",
-                  "input[placeholder*='Fecha']"],
-    "cab_mes": [".lightpick__month-title", "[class*='month-title']",
-                "[class*='monthName']", "[class*='month']"],
-    "siguiente": [".lightpick__next-action", "button[aria-label*='iguiente']",
-                  "[class*='next-action']", "[class*='next']"],
+    "origen": ["#origin"],
+    "destino": ["#destination"],
+    "abrir_cal": ["#first-input", "input[placeholder*='Fecha']"],
+    "siguiente": [".lightpick__next-action", "[class*='next-action']"],
+    "cab_mes": [".lightpick__month-title"],
     "aceptar_cal": ["button:has-text('Aceptar')", "button:has-text('Continuar')"],
-    "buscar": ["button:has-text('Buscar billete')", "button:has-text('Buscar')",
-               "[class*='btn-search']"],
+    "buscar": ["button:has-text('Buscar billete')", "button[type='submit']"],
     "filas": [".selectedTrain", ".trayecto", "[class*='train-item']",
               "[class*='trainList'] li"],
 }
 
 
-class Rendicion(Exception):
-    """Han fallado demasiadas rutas seguidas: no tiene sentido seguir."""
+class FueraDeVenta(Exception):
+    """La fecha existe en el calendario pero Renfe aun no la vende."""
+
+
+def ms_madrid(iso):
+    """Epoch en ms de la medianoche de esa fecha EN MADRID, que es lo que usa Lightpick."""
+    y, m, d = map(int, iso.split("-"))
+    return int(datetime(y, m, d, tzinfo=MADRID).timestamp() * 1000)
 
 
 def primero_que_funcione(page, selectores, accion, *args, timeout=6000, **kw):
@@ -91,92 +94,107 @@ def despues(h, suelo):
 
 
 def aceptar_cookies(page):
-    for sel in ["#onetrust-accept-btn-handler",
-                "button:has-text('Aceptar todas')", "button:has-text('Aceptar')"]:
-        try:
-            page.click(sel, timeout=4000)
-            return
-        except PWTimeout:
-            continue
+    try:
+        page.click("#onetrust-accept-btn-handler", timeout=5000)
+    except PWTimeout:
+        pass
 
 
 def elegir_fecha(page, iso):
     """
-    Pincha el dia `iso` (YYYY-MM-DD) en el calendario abierto.
-    Cuatro estrategias, de la mas barata a la mas tozuda.
+    Pincha el dia `iso` en el calendario Lightpick abierto.
+    Avanza de mes hasta que la celda aparece. Distingue tres finales:
+    la pincha, esta pero deshabilitada (fuera de venta), o no la encuentra.
     """
-    y, mes, dia = map(int, iso.split("-"))
+    ms = ms_madrid(iso)
+    bueno = (f".lightpick__day[data-time='{ms}']"
+             ":not(.is-disabled):not(.is-previous-month):not(.is-next-month)")
+    cualquiera = f".lightpick__day[data-time='{ms}']"
 
-    # 1) atributo directo, por si Renfe lo pone facil
-    for sel in (f"[data-date='{iso}']", f"[data-fecha='{iso}']",
-                f"td[data-date='{iso}']", f"[aria-label='{iso}']"):
+    for _ in range(24):
+        loc = page.locator(bueno).first
         try:
-            loc = page.locator(sel).first
             if loc.count() and loc.is_visible():
                 loc.click(timeout=4000)
                 return
         except Exception:
             pass
 
-    # 2) lightpick guarda la fecha como epoch en milisegundos
-    for tz in ("UTC", "Europe/Madrid"):
+        # ¿Existe pero deshabilitada? Entonces no es averia: aun no se vende.
+        crudo = page.locator(cualquiera).first
         try:
-            ms = int(datetime(y, mes, dia, tzinfo=timezone.utc).timestamp() * 1000)
-            loc = page.locator(f".lightpick__day[data-time='{ms}']").first
-            if loc.count() and loc.is_visible():
-                loc.click(timeout=4000)
-                return
+            if crudo.count():
+                clases = crudo.get_attribute("class") or ""
+                if "is-disabled" in clases:
+                    raise FueraDeVenta(f"{iso} aun no esta a la venta")
+        except FueraDeVenta:
+            raise
         except Exception:
             pass
-
-    # 3) aria-label en castellano: "6 de noviembre de 2026"
-    etiqueta = f"{dia} de {MESES[mes - 1]} de {y}"
-    for sel in (f"[aria-label*='{etiqueta}']", f"[title*='{etiqueta}']"):
-        try:
-            loc = page.locator(sel).first
-            if loc.count() and loc.is_visible():
-                loc.click(timeout=4000)
-                return
-        except Exception:
-            pass
-
-    # 4) a la brava: leer la cabecera del mes y avanzar hasta llegar
-    objetivo = f"{MESES[mes - 1]} {y}"
-    for _ in range(24):                       # como mucho dos anos hacia delante
-        cabecera = ""
-        for sel in SEL["cab_mes"]:
-            try:
-                loc = page.locator(sel).first
-                if loc.count():
-                    cabecera = (loc.inner_text() or "").strip().lower()
-                    break
-            except Exception:
-                continue
-
-        if objetivo in cabecera:
-            # dentro del mes correcto, pinchamos la celda cuyo texto sea el dia
-            for sel in (".lightpick__day:not(.is-disabled)",
-                        "td:not(.disabled):not(.is-disabled)",
-                        "[class*='day']:not([class*='disabled'])"):
-                try:
-                    celdas = page.locator(sel)
-                    for i in range(celdas.count()):
-                        c = celdas.nth(i)
-                        if (c.inner_text() or "").strip() == str(dia) and c.is_visible():
-                            c.click(timeout=4000)
-                            return
-                except Exception:
-                    continue
-            raise RuntimeError(f"mes {objetivo} localizado pero sin celda para el dia {dia}")
 
         try:
             primero_que_funcione(page, SEL["siguiente"], "click", timeout=4000)
-            page.wait_for_timeout(400)
+            page.wait_for_timeout(350)
         except Exception:
             break
 
-    raise RuntimeError(f"no se pudo seleccionar la fecha {iso} "
-                       f"(ultima cabecera vista: '{cabecera or 'ninguna'}')")
+    cab = ""
+    try:
+        cab = page.locator(SEL["cab_mes"][0]).first.inner_text()
+    except Exception:
+        pass
+    raise RuntimeError(f"no se encontro la celda de {iso} (data-time={ms}); "
+                       f"ultimo mes visible: '{cab.strip()}'")
+
+
+def poner_pasajeros(page, pax):
+    """
+    Renfe arranca en '1 adulto'. Si no conseguimos cambiarlo, el precio seria de
+    una sola persona y el radar compararia peras con manzanas. Por eso devolvemos
+    si se logro, y el JSON lo deja escrito.
+    """
+    try:
+        primero_que_funcione(
+            page,
+            ["[class*='passenger'] button", "button[class*='passenger']",
+             "#passengersSelector", "[class*='passenger']"],
+            "click", timeout=6000)
+        page.wait_for_timeout(800)
+    except Exception:
+        return False
+
+    def sumar(patrones, veces):
+        for _ in range(veces):
+            hecho = False
+            for p in patrones:
+                try:
+                    loc = page.locator(p).first
+                    if loc.count() and loc.is_visible():
+                        loc.click(timeout=2500)
+                        page.wait_for_timeout(300)
+                        hecho = True
+                        break
+                except Exception:
+                    continue
+            if not hecho:
+                return False
+        return True
+
+    ok_adultos = sumar(["button[aria-label*='ñadir'][aria-label*='dulto']",
+                        "[class*='adult'] [class*='plus']",
+                        "[class*='adult'] button:has-text('+')"],
+                       pax["adultos"] - 1)
+    ok_ninos = sumar(["button[aria-label*='ñadir'][aria-label*='iño']",
+                      "[class*='child'] [class*='plus']",
+                      "[class*='child'] button:has-text('+')"],
+                     pax["ninos"])
+
+    try:
+        primero_que_funcione(page, SEL["aceptar_cal"], "click", timeout=4000)
+    except Exception:
+        pass
+
+    return bool(ok_adultos and ok_ninos)
 
 
 def buscar(page, cfg, ventana, destino):
@@ -197,21 +215,23 @@ def buscar(page, cfg, ventana, destino):
     page.wait_for_timeout(900)
 
     elegir_fecha(page, ventana["salida"])
-    page.wait_for_timeout(500)
+    page.wait_for_timeout(400)
     elegir_fecha(page, ventana["vuelta"])
-    page.wait_for_timeout(500)
+    page.wait_for_timeout(400)
 
     try:
         primero_que_funcione(page, SEL["aceptar_cal"], "click", timeout=5000)
     except Exception:
         pass
 
+    pax_ok = poner_pasajeros(page, cfg["pasajeros"])
+
     primero_que_funcione(page, SEL["buscar"], "click", timeout=10_000)
 
     for sel in SEL["filas"]:
         try:
             page.wait_for_selector(sel, timeout=25_000)
-            return
+            return pax_ok
         except PWTimeout:
             continue
     raise RuntimeError("la busqueda no devolvio ninguna lista de trenes")
@@ -245,7 +265,7 @@ def leer_trayecto(page, sentido):
 
 
 def barrer_ruta(page, cfg, ventana, destino):
-    buscar(page, cfg, ventana, destino)
+    pax_ok = buscar(page, cfg, ventana, destino)
     p_i, s_i, l_i, t_i, temp_i, tard_i = leer_trayecto(page, "ida")
 
     try:
@@ -269,7 +289,11 @@ def barrer_ruta(page, cfg, ventana, destino):
         "destino": destino["nombre"],
         "referencia": ref,
         "precio": total,
-        "variacion_pct": round((total - ref) / ref * 100, 1) if ref else None,
+        "pasajeros_aplicados": pax_ok,
+        "aviso": None if pax_ok else
+                 "PRECIO DE 1 ADULTO: no se pudo fijar 2+2. No comparar con la referencia.",
+        "variacion_pct": (round((total - ref) / ref * 100, 1)
+                          if (ref and pax_ok) else None),
         "ida": {"salida": s_i, "llegada": l_i, "tren": t_i},
         "vuelta": {"salida": s_v, "llegada": l_v, "tren": t_v},
         "mas_temprano": temp_i,
@@ -279,25 +303,20 @@ def barrer_ruta(page, cfg, ventana, destino):
     }
 
 
-def volcar(resultado):
-    SALIDA.write_text(json.dumps(resultado, ensure_ascii=False, indent=2),
-                      encoding="utf-8")
+def volcar(r):
+    SALIDA.write_text(json.dumps(r, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def main():
     cfg = json.loads(RUTAS.read_text(encoding="utf-8"))
     DIAG.mkdir(exist_ok=True)
 
-    resultado = {
-        "generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "alerta": "Barrido en curso, sin terminar.",
-        "ventanas": {},
-    }
-    volcar(resultado)          # el fichero existe desde el primer segundo
+    res = {"generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+           "alerta": "Barrido en curso, sin terminar.", "ventanas": {}}
+    volcar(res)
 
-    fallos = ok = total = 0
-    seguidos = 0
-    diagnosticos = 0
+    ok = fallos = fuera = total = seguidos = diags = 0
+    sin_pax = 0
     rendido = False
 
     with sync_playwright() as pw:
@@ -317,15 +336,27 @@ def main():
 
                 total += 1
                 try:
-                    filas.append(barrer_ruta(page, cfg, ventana, destino))
+                    fila = barrer_ruta(page, cfg, ventana, destino)
+                    filas.append(fila)
                     ok += 1
                     seguidos = 0
+                    if not fila["pasajeros_aplicados"]:
+                        sin_pax += 1
+
+                except FueraDeVenta as e:
+                    # No es fallo: Renfe abre a ~4 meses. No cuenta para rendirse.
+                    fuera += 1
+                    seguidos = 0
+                    filas.append({"destino": destino["nombre"],
+                                  "referencia": destino.get("referencia"),
+                                  "precio": None, "error": str(e)})
+
                 except Exception as e:
                     fallos += 1
                     seguidos += 1
                     etq = f"{ventana['id']}-{destino['nombre']}".replace(" ", "_")
-                    if diagnosticos < MAX_DIAGNOSTICOS:
-                        diagnosticos += 1
+                    if diags < MAX_DIAGNOSTICOS:
+                        diags += 1
                         try:
                             page.screenshot(path=str(DIAG / f"{etq}.png"))
                             (DIAG / f"{etq}.html").write_text(
@@ -337,48 +368,41 @@ def main():
                     filas.append({"destino": destino["nombre"],
                                   "referencia": destino.get("referencia"),
                                   "precio": None, "error": str(e)[:300]})
-
                     if seguidos >= FALLOS_SEGUIDOS_MAX:
                         rendido = True
-                        print(f"\n{FALLOS_SEGUIDOS_MAX} fallos seguidos. Abortando "
-                              f"para no gastar 45 minutos repitiendo el mismo error.",
+                        print(f"\n{FALLOS_SEGUIDOS_MAX} fallos seguidos. Abortando.",
                               file=sys.stderr)
 
-            resultado["ventanas"][ventana["id"]] = {
+            res["ventanas"][ventana["id"]] = {
                 "salida": ventana["salida"], "vuelta": ventana["vuelta"],
-                "rutas": filas,
-            }
-            volcar(resultado)      # se actualiza ventana a ventana
+                "rutas": filas}
+            volcar(res)
 
         nav.close()
 
     if rendido and ok == 0:
-        resultado["alerta"] = (
-            f"El scraper no ha podido leer NINGUNA ruta y se ha rendido tras "
-            f"{FALLOS_SEGUIDOS_MAX} fallos seguidos. Renfe ha cambiado el maquetado "
-            f"o esta bloqueando al runner. Mirar diagnostico/ y lanzar la sonda."
-        )
+        res["alerta"] = ("El scraper no ha leido NINGUNA ruta y se ha rendido tras "
+                         f"{FALLOS_SEGUIDOS_MAX} fallos seguidos. Ver diagnostico/ "
+                         "y lanzar la sonda.")
     elif rendido:
-        resultado["alerta"] = (
-            f"Barrido abortado tras {FALLOS_SEGUIDOS_MAX} fallos seguidos. "
-            f"{ok} rutas se leyeron antes de abortar."
-        )
+        res["alerta"] = (f"Barrido abortado tras {FALLOS_SEGUIDOS_MAX} fallos seguidos. "
+                         f"{ok} rutas leidas antes de abortar.")
+    elif sin_pax:
+        res["alerta"] = (f"{sin_pax} rutas con precio de 1 adulto en vez de 2+2: "
+                         "no se pudo fijar el selector de pasajeros. NO comparar "
+                         "esos precios con la referencia.")
     elif fallos:
-        resultado["alerta"] = f"{fallos} de {total} rutas han fallado."
+        res["alerta"] = f"{fallos} de {total} rutas han fallado."
     else:
-        resultado["alerta"] = None
+        res["alerta"] = None
 
-    for v in resultado["ventanas"].values():
-        dias = (datetime.fromisoformat(v["salida"]).date()
-                - datetime.now(timezone.utc).date()).days
-        if dias > 125 and all(r.get("precio") is None for r in v["rutas"]):
-            for r in v["rutas"]:
-                r["error"] = "fuera de venta todavia (Renfe abre a ~4 meses)"
-
-    resultado["generado"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    volcar(resultado)
-    print(f"\nHecho: {ok}/{total} rutas con precio. Alerta: {resultado['alerta']}")
-    return 1 if ok == 0 else 0
+    res["resumen"] = {"con_precio": ok, "fallidas": fallos,
+                      "fuera_de_venta": fuera, "intentadas": total}
+    res["generado"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    volcar(res)
+    print(f"\nHecho: {ok} con precio, {fuera} fuera de venta, {fallos} fallidas.")
+    print(f"Alerta: {res['alerta']}")
+    return 1 if ok == 0 and fuera == 0 else 0
 
 
 if __name__ == "__main__":
@@ -386,9 +410,7 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception:
         traceback.print_exc()
-        volcar({
-            "generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "alerta": "El scraper reventó antes de empezar. Ver el log del workflow.",
-            "ventanas": {},
-        })
+        volcar({"generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "alerta": "El scraper reventó antes de empezar. Ver el log.",
+                "ventanas": {}})
         sys.exit(1)
