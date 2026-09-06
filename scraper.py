@@ -2,27 +2,41 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 7.
+Version 8.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
   v2  data-time en UTC; Lightpick usa hora LOCAL DE MADRID. RESUELTO.
   v3  Cerraba el panel de pasajeros con "Aceptar"; se llama "Listo". RESUELTO.
   v4  Filas por clases inventadas. -> Deteccion por forma. RESUELTO.
-  v5  Flujo de ida y vuelta devolvia el mismo listado dos veces; y el carrusel
-      impedia que los elementos fueran "estables".
-  v6  -> Animaciones desactivadas (bien) y dos busquedas de solo ida (bien),
-      PERO al pasar a solo ida Renfe repinta el bloque de fechas y #first-input
-      deja de existir. Cambiar una cosa rompio otra que funcionaba.
-  v7  -> El calendario se abre por bateria de candidatos + verificacion de que
-      .lightpick esta realmente visible, en vez de por un id fijo. Y si no se
-      logra pasar a solo ida, se cae con elegancia a ida y vuelta leyendo solo
-      la ida.
+  v5  Flujo de ida y vuelta devolvia el mismo listado dos veces.
+  v6  Al pasar a solo ida, #first-input desaparece. Rompi algo que funcionaba.
+  v7  Calendario por bateria + verificacion. FUNCIONO: 5 rutas leidas.
+      Pero el barrido destapo tres cosas:
+        a) Los pasajeros SE ACUMULABAN entre busquedas (Renfe los recuerda y yo
+           sumaba encima): 2+2, luego 3+4, luego 4+5.
+        b) El precio de la parrilla es "Precio DESDE X €", POR PERSONA Y
+           TRAYECTO, no el total de los cuatro. Compararlo contra una referencia
+           de 4 personas daba -74,6 % en Cuenca: un chollo fantasma puro.
+        c) Febrero devolvia parrilla sin trenes (aun no esta a la venta) y eso
+           se contaba como averia, abortando el barrido entero.
+  v8  a) Los pasajeros se fijan por DELTA sobre lo que ya hay, no sumando.
+      b) UNIDADES: se compara precio por persona contra referencia/4. Sin
+         inventar nada. Nunca se compara un "desde" con un total de cuatro.
+      c) Parrilla sin trenes = SinTrenes: ni cuenta como fallo ni aborta, y si
+         una ventana da dos seguidas se salta entera (no esta a la venta).
 
-REGLA APRENDIDA, aplicada ya en tres sitios: no depender de nombres (ids, clases),
-sino de funcion verificable. Filas = "lo que tiene precio y hora". Calendario =
-"lo que hace aparecer .lightpick". Pasajeros = "lo que cambia el value del
-desplegable". Cada vez que me he saltado esa regla, he fallado.
+REGLA APRENDIDA, aplicada ya en cuatro sitios: no depender de nombres (ids,
+clases) sino de funcion verificable. Filas = "lo que tiene precio y hora".
+Calendario = "lo que hace aparecer .lightpick". Pasajeros = "lo que deja el
+value del desplegable en 2 adultos, 2 niños". Cada vez que me la he saltado,
+he fallado.
+
+QUE MIDE ESTE FICHERO: precio "desde" POR PERSONA Y TRAYECTO. El campo
+precio_por_persona es la suma ida + vuelta por persona. La comparacion se hace
+contra referencia/4 porque la tabla de referencia son totales de 4 personas.
+precio_estimado_4 es orientativo (x4) y los niños suelen pagar menos, asi que
+tiende a quedarse alto. No usar ese estimado para decidir nada.
 """
 
 import json
@@ -45,6 +59,7 @@ RENFE = "https://www.renfe.com/es/es"
 MADRID = ZoneInfo("Europe/Madrid")
 T = 20_000
 FALLOS_SEGUIDOS_MAX = 3
+SIN_TRENES_PARA_SALTAR_VENTANA = 2
 MAX_DIAGNOSTICOS = 3
 LIMITE = int(os.environ.get("LIMITE", "0"))
 
@@ -79,6 +94,13 @@ JS_FILAS = r"""
 
 JS_HAY_FILAS = "() => { const f = (" + JS_FILAS.strip() + ")(); return f.length > 0; }"
 
+# Marcadores de "hemos llegado a la parrilla de resultados", vistos en el log del
+# 6 sep: botones day_cell / move_to_tomorrow y la url de venta.
+JS_ES_PARRILLA = r"""
+() => !!(document.querySelector('#day_button, .day_cell, [class*="move_to_"]')
+         || /buscarTren|venta\.renfe/i.test(location.href));
+"""
+
 JS_SOLO_IDA = r"""
 () => {
   for (const e of document.querySelectorAll('label,button,span,div,a,input')) {
@@ -102,7 +124,6 @@ JS_ABRIR_FECHA = r"""
 }
 """
 
-# Diagnostico decisivo cuando algo del formulario no aparece.
 JS_INPUTS = r"""
 () => Array.from(document.querySelectorAll('input,button'))
   .filter(e => e.offsetParent || e.getClientRects().length)
@@ -117,6 +138,10 @@ class FueraDeVenta(Exception):
     pass
 
 
+class SinTrenes(Exception):
+    """Llegamos a la parrilla pero no hay trenes: fuera de venta o sin servicio."""
+
+
 def ms_madrid(iso):
     y, m, d = map(int, iso.split("-"))
     return int(datetime(y, m, d, tzinfo=MADRID).timestamp() * 1000)
@@ -124,11 +149,6 @@ def ms_madrid(iso):
 
 def mas_dias(iso, n):
     return (datetime.fromisoformat(iso) + timedelta(days=n)).strftime("%Y-%m-%d")
-
-
-def hhmm(t):
-    m = re.search(r"\b([0-2]?\d):([0-5]\d)\b", t or "")
-    return f"{int(m.group(1)):02d}:{m.group(2)}" if m else None
 
 
 def eur(t):
@@ -179,14 +199,8 @@ def calendario_visible(page):
 
 
 def abrir_calendario(page):
-    """
-    Abre el desplegable de fechas. No depende de un id fijo: prueba candidatos
-    y VERIFICA que .lightpick queda visible, que es la definicion funcional de
-    'el calendario se ha abierto'.
-    """
     if calendario_visible(page):
         return "ya-abierto"
-
     for sel in ["#first-input", "input[placeholder*='Fecha']",
                 "input[placeholder*='fecha']", "[class*='daterange'] input",
                 ".lightpick__input", "#second-input", "[class*='daterange']"]:
@@ -199,7 +213,6 @@ def abrir_calendario(page):
                 return sel
         except Exception:
             continue
-
     try:
         if page.evaluate(JS_ABRIR_FECHA):
             page.wait_for_timeout(700)
@@ -207,7 +220,6 @@ def abrir_calendario(page):
                 return "js"
     except Exception:
         pass
-
     raise RuntimeError("no se pudo abrir el calendario (.lightpick nunca aparecio)")
 
 
@@ -287,7 +299,27 @@ def resumen_pasajeros(page):
         return ""
 
 
+def contar_pasajeros(texto):
+    """De '2 adultos, 2 niños' saca (2, 2). Por defecto Renfe arranca en 1 adulto."""
+    t = (texto or "").lower()
+    a = re.search(r"(\d+)\s*adulto", t)
+    n = re.search(r"(\d+)\s*ni[ñn]o", t)
+    return (int(a.group(1)) if a else 1, int(n.group(1)) if n else 0)
+
+
 def poner_pasajeros(page, pax):
+    """
+    Ajusta a 2 adultos + 2 niños POR DIFERENCIA sobre lo que ya hay.
+    Renfe recuerda la seleccion entre busquedas: sumar a ciegas producia
+    3+4 y luego 4+5, que fue el fallo de la v7.
+    """
+    actual_txt = resumen_pasajeros(page)
+    a_hay, n_hay = contar_pasajeros(actual_txt)
+    a_quiero, n_quiero = pax["adultos"], pax["ninos"]
+
+    if (a_hay, n_hay) == (a_quiero, n_quiero):
+        return True, actual_txt or f"{a_hay} adultos, {n_hay} niños"
+
     try:
         click_robusto(page, "#passengersSelection", timeout=6000)
         page.wait_for_timeout(700)
@@ -295,7 +327,7 @@ def poner_pasajeros(page, pax):
         return False, resumen_pasajeros(page)
 
     def pulsar(sel, veces):
-        for _ in range(veces):
+        for _ in range(max(0, veces)):
             try:
                 loc = page.locator(sel).first
                 if not (loc.count() and loc.is_visible()):
@@ -305,8 +337,15 @@ def poner_pasajeros(page, pax):
             except Exception:
                 return
 
-    pulsar("[aria-label='Añadir adulto']", max(0, pax["adultos"] - 1))
-    pulsar("[aria-label='Añadir niño mayor de 4']", pax["ninos"])
+    if a_quiero > a_hay:
+        pulsar("[aria-label='Añadir adulto']", a_quiero - a_hay)
+    elif a_quiero < a_hay:
+        pulsar("[aria-label='Eliminar adulto']", a_hay - a_quiero)
+
+    if n_quiero > n_hay:
+        pulsar("[aria-label='Añadir niño mayor de 4']", n_quiero - n_hay)
+    elif n_quiero < n_hay:
+        pulsar("[aria-label='Eliminar niño mayor de 4']", n_hay - n_quiero)
 
     try:
         page.click("button:has-text('Listo')", timeout=4000)
@@ -317,14 +356,12 @@ def poner_pasajeros(page, pax):
             pass
     page.wait_for_timeout(500)
 
-    r = resumen_pasajeros(page)
-    rl = r.lower()
-    ok = "2 adultos" in rl and ("2 niños" in rl or "2 ninos" in rl)
-    return ok, r
+    final = resumen_pasajeros(page)
+    ok = contar_pasajeros(final) == (a_quiero, n_quiero)
+    return ok, final
 
 
 def buscar_un_sentido(page, origen, destino, fecha, pax):
-    """Una busqueda. Devuelve (filas, pax_ok, pax_txt, metodo)."""
     page.goto(RENFE, wait_until="domcontentloaded", timeout=45_000)
     aceptar_cookies(page)
     page.wait_for_timeout(600)
@@ -344,9 +381,6 @@ def buscar_un_sentido(page, origen, destino, fecha, pax):
     abrir_calendario(page)
     elegir_fecha(page, fecha)
     page.wait_for_timeout(400)
-
-    # Si no se pudo pasar a solo ida, el formulario sigue pidiendo dos fechas.
-    # Ponemos una de vuelta cualquiera y leemos solo el listado de ida.
     if not solo_ida:
         try:
             elegir_fecha(page, mas_dias(fecha, 3))
@@ -362,9 +396,17 @@ def buscar_un_sentido(page, origen, destino, fecha, pax):
 
     activa = [p for p in page.context.pages if not p.is_closed()][-1]
     try:
-        activa.wait_for_function(JS_HAY_FILAS, timeout=45_000)
+        activa.wait_for_function(JS_HAY_FILAS, timeout=30_000)
     except PWTimeout:
-        raise RuntimeError(f"sin filas tras buscar {origen}->{destino} {fecha}; "
+        # Distinguir "la parrilla existe pero esta vacia" de "no llegamos".
+        try:
+            en_parrilla = bool(activa.evaluate(JS_ES_PARRILLA))
+        except Exception:
+            en_parrilla = False
+        if en_parrilla:
+            raise SinTrenes(f"parrilla sin trenes para {origen}->{destino} {fecha} "
+                            "(fuera de venta o sin servicio ese dia)")
+        raise RuntimeError(f"no se llego a la parrilla en {origen}->{destino} {fecha}; "
                            f"url={activa.url[:100]}")
 
     metodo = "solo_ida" if solo_ida else "ida_de_ida_y_vuelta"
@@ -393,6 +435,7 @@ def analizar(filas, etiqueta):
 def barrer_ruta(page, cfg, ventana, destino):
     origen = cfg["origen"]["nombre"]
     pax = cfg["pasajeros"]
+    n_pax = pax["adultos"] + pax["ninos"]
 
     f_i, ok1, pax1, met1 = buscar_un_sentido(page, origen, destino["nombre"],
                                              ventana["salida"], pax)
@@ -408,27 +451,33 @@ def barrer_ruta(page, cfg, ventana, destino):
               and despues(s_v, hl["vuelta_salida_minima"])
               and antes(l_v, hl["vuelta_llegada_maxima"]))
 
-    total = round(p_i + p_v, 2)
-    ref = destino.get("referencia")
+    # UNIDADES. Lo medido es "desde" POR PERSONA. La referencia es total de 4.
+    # Se compara por persona contra referencia/4: mismas unidades, sin inventar.
+    por_persona = round(p_i + p_v, 2)
+    ref_total = destino.get("referencia")
+    ref_persona = round(ref_total / n_pax, 2) if ref_total else None
+    var = (round((por_persona - ref_persona) / ref_persona * 100, 1)
+           if (ref_persona and pax_ok) else None)
+
     return {
         "destino": destino["nombre"],
-        "referencia": ref,
-        "precio": total,
+        "precio_por_persona": por_persona,
+        "precio_estimado_4": round(por_persona * n_pax, 2),
+        "referencia_total_4": ref_total,
+        "referencia_por_persona": ref_persona,
+        "variacion_pct": var,
+        "unidad": "precio 'desde' por persona, ida + vuelta",
         "metodo": f"{met1}+{met2}",
         "pasajeros_aplicados": pax_ok,
         "pasajeros_leidos": f"{pax1} / {pax2}",
         "aviso": None if pax_ok else
-                 f"OJO: el buscador decia '{pax1}' y '{pax2}', no 2 adultos + 2 niños. "
-                 "Precio NO comparable con la referencia.",
-        "variacion_pct": (round((total - ref) / ref * 100, 1)
-                          if (ref and pax_ok) else None),
-        "ida": {"salida": s_i, "llegada": l_i, "tren": t_i, "precio": p_i},
-        "vuelta": {"salida": s_v, "llegada": l_v, "tren": t_v, "precio": p_v},
+                 f"OJO: el buscador decia '{pax1}' y '{pax2}'. Precio no fiable.",
+        "ida": {"salida": s_i, "llegada": l_i, "tren": t_i, "precio_persona": p_i},
+        "vuelta": {"salida": s_v, "llegada": l_v, "tren": t_v, "precio_persona": p_v},
         "mas_temprano": temp_i,
         "mas_tardio": tard_v,
         "limpio": limpio,
         "fila_cruda_ida": (crudo_i or "")[:200],
-        "fila_cruda_vuelta": (crudo_v or "")[:200],
         "error": None,
     }
 
@@ -442,11 +491,14 @@ def main():
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
     if LIMITE:
-        print(f"LIMITE={LIMITE}: solo {len(destinos)} destinos (modo validacion)",
-              flush=True)
+        print(f"LIMITE={LIMITE}: solo {len(destinos)} destinos", flush=True)
 
     res = {"generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-           "alerta": "Barrido en curso, sin terminar.", "ventanas": {}}
+           "alerta": "Barrido en curso, sin terminar.",
+           "unidad": "precio 'desde' por persona (ida + vuelta). La referencia "
+                     "de la tabla es total de 4, por eso se compara contra "
+                     "referencia/4.",
+           "ventanas": {}}
     volcar(res)
 
     ok = fallos = fuera = total = seguidos = diags = sin_pax = 0
@@ -468,32 +520,50 @@ def main():
 
         for ventana in cfg["ventanas"]:
             filas = []
+            sin_trenes_seguidos = 0
+            ventana_muerta = False
+
             for destino in destinos:
-                if rendido:
-                    filas.append({"destino": destino["nombre"], "precio": None,
-                                  "error": "no intentado: barrido abortado antes"})
+                if rendido or ventana_muerta:
+                    motivo = ("barrido abortado antes" if rendido
+                              else "ventana sin trenes: aun no esta a la venta")
+                    filas.append({"destino": destino["nombre"], "precio_por_persona": None,
+                                  "error": f"no intentado: {motivo}"})
                     continue
+
                 total += 1
                 try:
                     fila = barrer_ruta(page, cfg, ventana, destino)
                     filas.append(fila)
                     ok += 1
                     seguidos = 0
+                    sin_trenes_seguidos = 0
                     if not fila["pasajeros_aplicados"]:
                         sin_pax += 1
-                    print(f"[ok] {ventana['id']}-{destino['nombre']}: {fila['precio']} € "
-                          f"(ida {fila['ida']['precio']} + vuelta {fila['vuelta']['precio']}) "
-                          f"| {fila['metodo']} | pax: {fila['pasajeros_leidos']}", flush=True)
-                    print(f"      ida: {fila['fila_cruda_ida'][:130]}", flush=True)
+                    v = fila["variacion_pct"]
+                    comp = (f"ref/persona {fila['referencia_por_persona']} € | "
+                            f"{'+' if v > 0 else ''}{v} %") if v is not None \
+                        else "sin comparar (pasajeros no fiables)"
+                    print(f"[ok] {ventana['id']}-{destino['nombre']}: "
+                          f"{fila['precio_por_persona']} €/persona "
+                          f"(ida {fila['ida']['precio_persona']} + "
+                          f"vuelta {fila['vuelta']['precio_persona']}) | {comp}",
+                          flush=True)
+                    print(f"      pax: {fila['pasajeros_leidos']}", flush=True)
 
-                except FueraDeVenta as e:
+                except (FueraDeVenta, SinTrenes) as e:
                     fuera += 1
                     seguidos = 0
+                    sin_trenes_seguidos += 1
                     filas.append({"destino": destino["nombre"],
-                                  "referencia": destino.get("referencia"),
-                                  "precio": None, "error": str(e)})
-                    print(f"[fuera de venta] {ventana['id']}-{destino['nombre']}",
+                                  "referencia_total_4": destino.get("referencia"),
+                                  "precio_por_persona": None, "error": str(e)})
+                    print(f"[fuera de venta] {ventana['id']}-{destino['nombre']}: {e}",
                           flush=True)
+                    if sin_trenes_seguidos >= SIN_TRENES_PARA_SALTAR_VENTANA:
+                        ventana_muerta = True
+                        print(f"      -> ventana '{ventana['id']}' aun no esta a la "
+                              f"venta. Me la salto entera.", flush=True)
 
                 except Exception as e:
                     fallos += 1
@@ -501,7 +571,6 @@ def main():
                     etq = f"{ventana['id']}-{destino['nombre']}".replace(" ", "_")
                     print(f"[fallo {seguidos}/{FALLOS_SEGUIDOS_MAX}] {etq}: {e}",
                           flush=True)
-
                     if diags < MAX_DIAGNOSTICOS:
                         diags += 1
                         try:
@@ -513,8 +582,7 @@ def main():
                             for v in vistas[:10]:
                                 print(f"        · {v[:170]}", flush=True)
                             if not vistas:
-                                print("      inputs y botones visibles:", flush=True)
-                                for s in (act.evaluate(JS_INPUTS) or [])[:25]:
+                                for s in (act.evaluate(JS_INPUTS) or [])[:20]:
                                     print(f"        · {s}", flush=True)
                             act.screenshot(path=str(DIAG / f"{etq}.png"))
                             (DIAG / f"{etq}.html").write_text(
@@ -522,10 +590,9 @@ def main():
                         except Exception as e2:
                             print(f"      (no se pudo volcar: {str(e2)[:120]})",
                                   flush=True)
-
                     filas.append({"destino": destino["nombre"],
-                                  "referencia": destino.get("referencia"),
-                                  "precio": None, "error": str(e)[:300]})
+                                  "referencia_total_4": destino.get("referencia"),
+                                  "precio_por_persona": None, "error": str(e)[:300]})
                     if seguidos >= FALLOS_SEGUIDOS_MAX:
                         rendido = True
                         print(f"\n{FALLOS_SEGUIDOS_MAX} fallos seguidos. Abortando.",
@@ -546,15 +613,14 @@ def main():
                          f"{ok} rutas leidas antes.")
     elif sin_pax:
         res["alerta"] = (f"{sin_pax} rutas con pasajeros mal fijados: precios NO "
-                         "comparables. Mirar pasajeros_leidos.")
+                         "fiables. Mirar pasajeros_leidos.")
     elif fallos:
         res["alerta"] = f"{fallos} de {total} rutas han fallado."
     else:
         res["alerta"] = None
 
     res["resumen"] = {"con_precio": ok, "fallidas": fallos, "fuera_de_venta": fuera,
-                      "intentadas": total, "pasajeros_mal": sin_pax,
-                      "metodo": "dos busquedas por ruta, precios sumados"}
+                      "intentadas": total, "pasajeros_mal": sin_pax}
     res["generado"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     volcar(res)
     print(f"\nHecho: {ok} con precio, {fuera} fuera de venta, {fallos} fallidas.",
