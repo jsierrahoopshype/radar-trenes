@@ -2,26 +2,24 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 4, con el componente de pasajeros ya identificado.
+Version 5. Cambio de metodo en la deteccion de filas.
 
-Historial de fallos y arreglos, para que no se repitan:
-  v1  Insistia 63 veces con el mismo error y agotaba los 45 min del job.
-      -> Ahora se rinde a los 3 fallos seguidos.
-  v2  Calculaba data-time en UTC. Renfe usa Lightpick con epoch en MILISEGUNDOS
-      y en hora LOCAL DE MADRID. Nunca casaba.
-      -> zoneinfo("Europe/Madrid"). Confirmado funcionando el 6 sep.
-  v3  Cerraba el panel de pasajeros buscando un boton "Aceptar". El componente
-      <rf-passengers-integration> lo llama "Listo" (passenger-apply="Listo").
-      El panel se quedaba abierto TAPANDO el boton de buscar, y el click moria
-      por elemento cubierto: "locator resolved" y luego timeout.
-      -> Se cierra con "Listo", se verifica que cerro, y el click de buscar es
-         robusto (scroll, Escape, y click por DOM como ultimo recurso).
+Historial, para no repetir errores:
+  v1  Insistia 63 veces con el mismo fallo y agotaba los 45 min del job.
+      -> Se rinde a los 3 fallos seguidos.
+  v2  data-time calculado en UTC. Lightpick lo guarda en hora LOCAL DE MADRID.
+      -> zoneinfo("Europe/Madrid"). Resuelto y confirmado.
+  v3  Cerraba el panel de pasajeros con "Aceptar"; el componente lo llama "Listo".
+      El panel tapaba el boton de buscar y el click moria por elemento cubierto.
+      -> Se cierra con "Listo" + click robusto. Resuelto y confirmado.
+  v4  Buscaba las filas de tren por clases inventadas (.selectedTrain, .trayecto...).
+      Ninguna existe. Mismo error de fondo tres veces: adivinar nombres de clase.
+      -> AHORA LAS FILAS SE DETECTAN POR FORMA, NO POR CLASE.
 
-Del volcado del componente salen los selectores exactos, ya sin adivinar:
-  id del desplegable      #passengersSelection   (value="1 adulto")
-  sumar adulto            [aria-label="Añadir adulto"]
-  sumar nino de 4 a 13    [aria-label="Añadir niño mayor de 4"]
-  cerrar el panel         "Listo"
+Como funciona la deteccion por forma: una fila de tren es el elemento MAS PEQUENO
+que contiene a la vez un importe en euros y una hora. Se busca en el DOM con JS y
+se descartan los contenedores cuyos hijos ya cumplen. No depende de como Renfe
+llame a sus clases, asi que sobrevive a rediseños.
 """
 
 import json
@@ -45,11 +43,33 @@ T = 20_000
 FALLOS_SEGUIDOS_MAX = 3
 MAX_DIAGNOSTICOS = 3
 
-FILAS = [".selectedTrain", ".trayecto", "[class*='train-item']", "[class*='trainList'] li"]
+# El corazon de la version 5: filas por forma, no por clase.
+JS_FILAS = r"""
+() => {
+  const rePrecio = /(\d{1,4}[.,]\d{2}\s*€)|(\d{1,4}\s*€)/;
+  const reHora   = /\b[0-2]?\d:[0-5]\d\b/;
+  const filas = [];
+  for (const el of document.querySelectorAll('div,li,article,tr,section,a')) {
+    const t = el.innerText || '';
+    if (t.length < 10 || t.length > 900) continue;
+    if (!rePrecio.test(t) || !reHora.test(t)) continue;
+    let hijoCumple = false;
+    for (const h of el.children) {
+      const ht = h.innerText || '';
+      if (rePrecio.test(ht) && reHora.test(ht)) { hijoCumple = true; break; }
+    }
+    if (hijoCumple) continue;
+    filas.push(t.replace(/\s+/g, ' ').trim());
+  }
+  return filas;
+}
+"""
+
+JS_HAY_FILAS = "() => { const f = (" + JS_FILAS.strip() + ")(); return f.length > 0; }"
 
 
 class FueraDeVenta(Exception):
-    """La fecha existe en el calendario pero Renfe aun no la vende."""
+    pass
 
 
 def ms_madrid(iso):
@@ -78,27 +98,18 @@ def despues(h, suelo):
 
 
 def click_robusto(page, selector, timeout=8000):
-    """
-    Pincha aunque haya algo encima. Tres intentos, de mas limpio a mas bruto:
-    click normal, Escape para cerrar overlays y reintentar, y click por DOM.
-    El click por DOM se salta las comprobaciones de Playwright, asi que solo
-    como ultimo recurso.
-    """
     loc = page.locator(selector).first
     if not loc.count():
         raise RuntimeError(f"no existe {selector}")
-
     try:
         loc.scroll_into_view_if_needed(timeout=3000)
     except Exception:
         pass
-
     try:
         loc.click(timeout=timeout)
         return "normal"
     except Exception:
         pass
-
     try:
         page.keyboard.press("Escape")
         page.wait_for_timeout(500)
@@ -106,12 +117,11 @@ def click_robusto(page, selector, timeout=8000):
         return "tras-escape"
     except Exception:
         pass
-
     try:
         loc.evaluate("e => e.click()")
         return "dom"
     except Exception as e:
-        raise RuntimeError(f"{selector} no se dejo pinchar de ninguna forma: {str(e)[:120]}")
+        raise RuntimeError(f"{selector} no se dejo pinchar: {str(e)[:120]}")
 
 
 def aceptar_cookies(page):
@@ -122,11 +132,9 @@ def aceptar_cookies(page):
 
 
 def elegir_fecha(page, iso):
-    """Pincha el dia en el Lightpick, avanzando de mes hasta encontrarlo."""
     ms = ms_madrid(iso)
     bueno = (f".lightpick__day[data-time='{ms}']"
              ":not(.is-disabled):not(.is-previous-month):not(.is-next-month)")
-
     for _ in range(24):
         loc = page.locator(bueno).first
         try:
@@ -135,7 +143,6 @@ def elegir_fecha(page, iso):
                 return
         except Exception:
             pass
-
         crudo = page.locator(f".lightpick__day[data-time='{ms}']").first
         try:
             if crudo.count() and "is-disabled" in (crudo.get_attribute("class") or ""):
@@ -144,20 +151,12 @@ def elegir_fecha(page, iso):
             raise
         except Exception:
             pass
-
         try:
             page.click(".lightpick__next-action", timeout=4000)
             page.wait_for_timeout(350)
         except Exception:
             break
-
-    cab = ""
-    try:
-        cab = page.locator(".lightpick__month-title").first.inner_text()
-    except Exception:
-        pass
-    raise RuntimeError(f"no se encontro la celda de {iso} (data-time={ms}); "
-                       f"ultimo mes visible: '{cab.strip()}'")
+    raise RuntimeError(f"no se encontro la celda de {iso} (data-time={ms})")
 
 
 def cerrar_calendario(page):
@@ -177,20 +176,13 @@ def cerrar_calendario(page):
 
 
 def resumen_pasajeros(page):
-    """Lee el value del desplegable: '1 adulto', '2 adultos, 2 niños', etc."""
     try:
-        v = page.locator("#passengersSelection").first.get_attribute("value")
-        return (v or "").strip()
+        return (page.locator("#passengersSelection").first.get_attribute("value") or "").strip()
     except Exception:
         return ""
 
 
 def poner_pasajeros(page, pax):
-    """
-    Deja el buscador en 2 adultos + 2 ninos y CIERRA el panel.
-    Devuelve (ok, resumen). Si no cierra el panel, el boton de buscar queda
-    tapado: eso fue exactamente el fallo de la version 3.
-    """
     try:
         click_robusto(page, "#passengersSelection", timeout=6000)
         page.wait_for_timeout(800)
@@ -209,31 +201,42 @@ def poner_pasajeros(page, pax):
                 return False
         return True
 
-    # Arranca en 1 adulto y 0 ninos. Los aria-label salen del propio componente.
     pulsar("[aria-label='Añadir adulto']", max(0, pax["adultos"] - 1))
     pulsar("[aria-label='Añadir niño mayor de 4']", pax["ninos"])
 
-    # "Listo" es como el componente llama a su boton de aplicar (passenger-apply).
-    cerrado = False
     for sel in ["button:has-text('Listo')", "[class*='passenger'] button:has-text('Listo')"]:
         try:
             page.click(sel, timeout=4000)
-            cerrado = True
             break
         except Exception:
             continue
-    if not cerrado:
+    else:
         try:
             page.keyboard.press("Escape")
-            cerrado = True
         except Exception:
             pass
     page.wait_for_timeout(600)
 
-    resumen = resumen_pasajeros(page)
-    ok = ("2 adultos" in resumen.lower()) and ("2 niños" in resumen.lower()
-                                               or "2 ninos" in resumen.lower())
-    return ok, resumen
+    r = resumen_pasajeros(page).lower()
+    ok = "2 adultos" in r and ("2 niños" in r or "2 ninos" in r)
+    return ok, resumen_pasajeros(page)
+
+
+def pagina_activa(page):
+    """Renfe puede abrir los resultados en otra pestaña. Nos quedamos con la ultima."""
+    try:
+        paginas = [p for p in page.context.pages if not p.is_closed()]
+        return paginas[-1] if paginas else page
+    except Exception:
+        return page
+
+
+def leer_filas(page):
+    """Devuelve la lista de textos de fila detectados por forma."""
+    try:
+        return page.evaluate(JS_FILAS) or []
+    except Exception:
+        return []
 
 
 def buscar(page, cfg, ventana, destino):
@@ -260,7 +263,6 @@ def buscar(page, cfg, ventana, destino):
 
     pax_ok, pax_txt = poner_pasajeros(page, cfg["pasajeros"])
 
-    # Si algun panel siguiera abierto, taparia el boton. Nos aseguramos.
     try:
         if page.locator("#passengersSelection[aria-expanded='true']").count():
             page.keyboard.press("Escape")
@@ -270,27 +272,20 @@ def buscar(page, cfg, ventana, destino):
 
     click_robusto(page, "button:has-text('Buscar billete')", timeout=10_000)
 
-    for sel in FILAS:
-        try:
-            page.wait_for_selector(sel, timeout=25_000)
-            return pax_ok, pax_txt
-        except PWTimeout:
-            continue
-    raise RuntimeError("la busqueda no devolvio ninguna lista de trenes")
+    activa = pagina_activa(page)
+    try:
+        activa.wait_for_function(JS_HAY_FILAS, timeout=45_000)
+    except PWTimeout:
+        raise RuntimeError(
+            f"tras buscar no aparecio ninguna fila con precio y hora. "
+            f"url={activa.url[:120]}")
+
+    return activa, pax_ok, pax_txt
 
 
-def leer_trayecto(page, sentido):
-    filas = []
-    for sel in FILAS:
-        filas = page.query_selector_all(sel)
-        if filas:
-            break
-    if not filas:
-        raise RuntimeError(f"sin filas de tren en {sentido}")
-
+def analizar(filas, sentido):
     horas, mejor = [], None
-    for fila in filas:
-        txt = fila.inner_text()
+    for txt in filas:
         precio, salida = eur(txt), hhmm(txt)
         todas = re.findall(r"\b([0-2]?\d:[0-5]\d)\b", txt)
         llegada = todas[1] if len(todas) > 1 else None
@@ -300,25 +295,31 @@ def leer_trayecto(page, sentido):
             horas.append(salida)
         if precio is not None and (mejor is None or precio < mejor[0]):
             mejor = (precio, salida, llegada, tren)
-
     if mejor is None:
         raise RuntimeError(f"filas sin precio legible en {sentido}")
     return (*mejor, min(horas) if horas else None, max(horas) if horas else None)
 
 
 def barrer_ruta(page, cfg, ventana, destino):
-    pax_ok, pax_txt = buscar(page, cfg, ventana, destino)
-    p_i, s_i, l_i, t_i, temp_i, tard_i = leer_trayecto(page, "ida")
+    activa, pax_ok, pax_txt = buscar(page, cfg, ventana, destino)
+
+    filas_ida = leer_filas(activa)
+    p_i, s_i, l_i, t_i, temp_i, tard_i = analizar(filas_ida, "ida")
 
     for sel in ["button:has-text('Continuar')", "button:has-text('Seleccionar')"]:
         try:
-            page.click(sel, timeout=6000)
-            page.wait_for_timeout(1500)
+            activa.click(sel, timeout=6000)
+            activa.wait_for_timeout(2000)
             break
         except Exception:
             continue
 
-    p_v, s_v, l_v, t_v, temp_v, tard_v = leer_trayecto(page, "vuelta")
+    filas_vta = leer_filas(activa)
+    # Si la vuelta no se pudo abrir, al menos no inventamos: reutilizar la ida seria
+    # duplicar el precio y cantar un chollo falso.
+    if not filas_vta or filas_vta == filas_ida:
+        raise RuntimeError("no se pudo leer el trayecto de vuelta por separado")
+    p_v, s_v, l_v, t_v, temp_v, tard_v = analizar(filas_vta, "vuelta")
 
     hl = cfg["horario_limpio"]
     limpio = (antes(l_i, hl["ida_llegada_maxima"])
@@ -335,7 +336,7 @@ def barrer_ruta(page, cfg, ventana, destino):
         "pasajeros_leidos": pax_txt,
         "aviso": None if pax_ok else
                  f"OJO: el buscador decia '{pax_txt}', no 2 adultos + 2 niños. "
-                 f"Precio NO comparable con la referencia.",
+                 "Precio NO comparable con la referencia.",
         "variacion_pct": (round((total - ref) / ref * 100, 1)
                           if (ref and pax_ok) else None),
         "ida": {"salida": s_i, "llegada": l_i, "tren": t_i},
@@ -376,7 +377,6 @@ def main():
                     filas.append({"destino": destino["nombre"], "precio": None,
                                   "error": "no intentado: barrido abortado antes"})
                     continue
-
                 total += 1
                 try:
                     fila = barrer_ruta(page, cfg, ventana, destino)
@@ -387,14 +387,12 @@ def main():
                         sin_pax += 1
                     print(f"[ok] {ventana['id']}-{destino['nombre']}: "
                           f"{fila['precio']} € ({fila['pasajeros_leidos']})")
-
                 except FueraDeVenta as e:
                     fuera += 1
                     seguidos = 0
                     filas.append({"destino": destino["nombre"],
                                   "referencia": destino.get("referencia"),
                                   "precio": None, "error": str(e)})
-
                 except Exception as e:
                     fallos += 1
                     seguidos += 1
@@ -402,9 +400,13 @@ def main():
                     if diags < MAX_DIAGNOSTICOS:
                         diags += 1
                         try:
-                            page.screenshot(path=str(DIAG / f"{etq}.png"))
+                            act = pagina_activa(page)
+                            act.screenshot(path=str(DIAG / f"{etq}.png"))
                             (DIAG / f"{etq}.html").write_text(
-                                page.content()[:400_000], encoding="utf-8")
+                                act.content()[:400_000], encoding="utf-8")
+                            (DIAG / f"{etq}-filas.txt").write_text(
+                                "\n---\n".join(leer_filas(act)[:40]) or "(ninguna)",
+                                encoding="utf-8")
                         except Exception:
                             pass
                     print(f"[fallo {seguidos}/{FALLOS_SEGUIDOS_MAX}] {etq}: {e}",
@@ -429,18 +431,17 @@ def main():
                          f"{FALLOS_SEGUIDOS_MAX} fallos seguidos. Ver diagnostico/.")
     elif rendido:
         res["alerta"] = (f"Barrido abortado tras {FALLOS_SEGUIDOS_MAX} fallos seguidos. "
-                         f"{ok} rutas leidas antes de abortar.")
+                         f"{ok} rutas leidas antes.")
     elif sin_pax:
-        res["alerta"] = (f"{sin_pax} rutas con pasajeros mal fijados. Esos precios NO "
-                         "son comparables con la referencia: mirar pasajeros_leidos.")
+        res["alerta"] = (f"{sin_pax} rutas con pasajeros mal fijados: precios NO "
+                         "comparables. Mirar pasajeros_leidos.")
     elif fallos:
         res["alerta"] = f"{fallos} de {total} rutas han fallado."
     else:
         res["alerta"] = None
 
-    res["resumen"] = {"con_precio": ok, "fallidas": fallos,
-                      "fuera_de_venta": fuera, "intentadas": total,
-                      "pasajeros_mal": sin_pax}
+    res["resumen"] = {"con_precio": ok, "fallidas": fallos, "fuera_de_venta": fuera,
+                      "intentadas": total, "pasajeros_mal": sin_pax}
     res["generado"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     volcar(res)
     print(f"\nHecho: {ok} con precio, {fuera} fuera de venta, {fallos} fallidas.")
