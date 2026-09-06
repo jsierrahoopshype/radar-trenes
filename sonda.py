@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 """
-Sonda de diagnostico, v3. Foco: LA PAGINA DE RESULTADOS.
+Sonda v4. Una sola pregunta: por que los pasajeros quedan en "1 adulto" con la
+ventana de noviembre y en "2 adultos, 2 ninos" con la de diciembre.
 
-El calendario y los pasajeros ya estan resueltos y confirmados. Lo unico a oscuras
-es que aparece despues de pulsar "Buscar billete": si navega a otro dominio, si
-abre pestaña nueva, si mete un interstitial, y como son las filas de tren.
+El comportamiento es DETERMINISTA (dos barridos byte a byte iguales), asi que no
+es una carrera de hidratacion como supuse. Esta sonda no arregla nada: instrumenta
+el panel paso a paso en las dos fechas y enseña donde divergen.
 
-Hace el camino completo una sola vez (Madrid-Barcelona) y vuelca:
-  - a donde acaba (url y titulo), y si se abrio otra pestaña
-  - los elementos que contienen a la vez un precio y una hora, con su clase real
-  - el HTML de la pagina de resultados
-  - capturas antes y despues de buscar
-Tarda ~1 minuto.
+Tarda ~2 minutos.
 """
 
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -26,35 +21,17 @@ DIAG = RAIZ / "diagnostico"
 RENFE = "https://www.renfe.com/es/es"
 MADRID = ZoneInfo("Europe/Madrid")
 
-IDA, VUELTA = "2026-11-06", "2026-11-09"
+CASOS = [
+    ("noviembre", "Madrid (todas)", "Cuenca", "2026-11-06"),
+    ("diciembre", "Madrid (todas)", "Cuenca", "2026-12-04"),
+]
 
-# Mismo detector por forma que usa el scraper, pero devolviendo tambien la clase
-# real del elemento, que es lo que aqui interesa documentar.
-JS_CANDIDATOS = r"""
-() => {
-  const rePrecio = /(\d{1,4}[.,]\d{2}\s*€)|(\d{1,4}\s*€)/;
-  const reHora   = /\b[0-2]?\d:[0-5]\d\b/;
-  const out = [];
-  for (const el of document.querySelectorAll('div,li,article,tr,section,a')) {
-    const t = el.innerText || '';
-    if (t.length < 10 || t.length > 900) continue;
-    if (!rePrecio.test(t) || !reHora.test(t)) continue;
-    let hijoCumple = false;
-    for (const h of el.children) {
-      const ht = h.innerText || '';
-      if (rePrecio.test(ht) && reHora.test(ht)) { hijoCumple = true; break; }
-    }
-    if (hijoCumple) continue;
-    out.push({
-      tag: el.tagName,
-      cls: (typeof el.className === 'string' ? el.className : '').slice(0, 120),
-      id: el.id || '',
-      txt: t.replace(/\s+/g, ' ').slice(0, 200)
-    });
-  }
-  return out.slice(0, 30);
+BOTONES = {
+    "sumar adulto": "[aria-label='Añadir adulto']",
+    "sumar niño >4": "[aria-label='Añadir niño mayor de 4']",
+    "sumar niño <4": "[aria-label='Añadir niño menor de 4']",
+    "quitar adulto": "[aria-label='Eliminar adulto']",
 }
-"""
 
 
 def ms_madrid(iso):
@@ -62,140 +39,164 @@ def ms_madrid(iso):
     return int(datetime(y, m, d, tzinfo=MADRID).timestamp() * 1000)
 
 
-def elegir_fecha(page, iso, inf):
-    ms = ms_madrid(iso)
-    for i in range(24):
+def valor(page):
+    try:
+        return (page.locator("#passengersSelection").first
+                .get_attribute("value") or "").strip()
+    except Exception as e:
+        return f"<error: {str(e)[:60]}>"
+
+
+def estado_botones(page, inf):
+    for nombre, sel in BOTONES.items():
+        try:
+            loc = page.locator(sel)
+            n = loc.count()
+            vis = loc.first.is_visible() if n else False
+            hab = loc.first.is_enabled() if n else False
+            inf.append(f"      {nombre:14s} n={n} visible={vis} habilitado={hab}")
+        except Exception as e:
+            inf.append(f"      {nombre:14s} ERROR {str(e)[:60]}")
+
+
+def caso(page, inf, etiqueta, origen, destino, fecha):
+    inf.append(f"\n{'=' * 62}\nCASO {etiqueta.upper()}  {origen} -> {destino}  {fecha}\n{'=' * 62}")
+
+    page.goto(RENFE, wait_until="domcontentloaded", timeout=60_000)
+    try:
+        page.click("#onetrust-accept-btn-handler", timeout=5000)
+    except PWTimeout:
+        pass
+    page.wait_for_timeout(1500)
+    inf.append(f"  1. tras cargar la portada          value = '{valor(page)}'")
+
+    # solo ida
+    solo = False
+    for sel in ["label:has-text('Viaje solo ida')", "label:has-text('Solo ida')"]:
+        try:
+            page.click(sel, timeout=2500)
+            solo = True
+            break
+        except Exception:
+            continue
+    if not solo:
+        try:
+            solo = bool(page.evaluate(
+                "() => { for (const e of document.querySelectorAll('label,button,span,div,a,input')) {"
+                " const t = ((e.innerText||e.value||'')+'').trim().toLowerCase();"
+                " if (t==='viaje solo ida'||t==='solo ida') { e.click(); return true; } } return false; }"))
+        except Exception:
+            pass
+    page.wait_for_timeout(1000)
+    inf.append(f"  2. tras poner SOLO IDA ({solo})      value = '{valor(page)}'")
+
+    page.fill("#origin", origen)
+    page.wait_for_timeout(1100)
+    page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
+    page.fill("#destination", destino)
+    page.wait_for_timeout(1100)
+    page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
+    inf.append(f"  3. tras origen y destino           value = '{valor(page)}'")
+
+    # fecha
+    try:
+        page.click("#first-input", timeout=6000)
+    except Exception:
+        try:
+            page.click("input[placeholder*='Fecha']", timeout=6000)
+        except Exception:
+            inf.append("     [!] no se pudo abrir el calendario")
+    page.wait_for_timeout(900)
+    ms = ms_madrid(fecha)
+    puesta = False
+    for _ in range(24):
         loc = page.locator(f".lightpick__day[data-time='{ms}']"
                            ":not(.is-disabled):not(.is-previous-month)").first
         if loc.count() and loc.is_visible():
             loc.click(timeout=4000)
-            inf.append(f"  fecha {iso} pinchada (avanzando {i} meses)")
-            return True
+            puesta = True
+            break
         try:
-            page.click(".lightpick__next-action", timeout=4000)
-            page.wait_for_timeout(350)
+            page.click(".lightpick__next-action", timeout=3000)
+            page.wait_for_timeout(300)
         except Exception:
             break
-    inf.append(f"  [ ] fecha {iso} NO pinchada")
-    return False
+    for sel in ["button:has-text('Aceptar')", "button:has-text('Listo')"]:
+        try:
+            page.click(sel, timeout=2000)
+        except Exception:
+            pass
+    page.wait_for_timeout(700)
+    inf.append(f"  4. tras la fecha ({puesta})          value = '{valor(page)}'")
+
+    # panel de pasajeros
+    abierto = None
+    for sel in ["#passengersSelection", "[class*='passenger'] button"]:
+        try:
+            page.click(sel, timeout=5000)
+            abierto = sel
+            break
+        except Exception:
+            continue
+    page.wait_for_timeout(1000)
+    inf.append(f"  5. panel abierto con {abierto}")
+    inf.append(f"                                     value = '{valor(page)}'")
+    inf.append("     estado de los botones:")
+    estado_botones(page, inf)
+
+    # clic a clic, leyendo despues de cada uno
+    for i in range(1):
+        try:
+            page.click(BOTONES["sumar adulto"], timeout=3000)
+            page.wait_for_timeout(600)
+            inf.append(f"  6.{i+1} tras 'Añadir adulto'          value = '{valor(page)}'")
+        except Exception as e:
+            inf.append(f"  6.{i+1} FALLO al pulsar adulto: {str(e)[:100]}")
+
+    for i in range(2):
+        try:
+            page.click(BOTONES["sumar niño >4"], timeout=3000)
+            page.wait_for_timeout(600)
+            inf.append(f"  7.{i+1} tras 'Añadir niño mayor de 4' value = '{valor(page)}'")
+        except Exception as e:
+            inf.append(f"  7.{i+1} FALLO al pulsar niño: {str(e)[:100]}")
+
+    page.screenshot(path=str(DIAG / f"pax-{etiqueta}.png"))
+
+    try:
+        page.click("button:has-text('Listo')", timeout=4000)
+        page.wait_for_timeout(800)
+        inf.append(f"  8. tras pulsar 'Listo'             value = '{valor(page)}'")
+    except Exception as e:
+        inf.append(f"  8. FALLO al pulsar Listo: {str(e)[:100]}")
+
+    # ¿sobrevive al click de buscar?
+    try:
+        b = page.locator("button:has-text('Buscar billete')").first
+        b.scroll_into_view_if_needed(timeout=3000)
+        inf.append(f"  9. justo antes de buscar           value = '{valor(page)}'")
+    except Exception:
+        pass
 
 
 def main():
     DIAG.mkdir(exist_ok=True)
-    inf = ["SONDA RENFE v3 - foco en PAGINA DE RESULTADOS",
+    inf = ["SONDA v4 - por que los pasajeros no se fijan en noviembre",
            f"generado: {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
-           f"ruta de prueba: Madrid -> Barcelona, {IDA} / {VUELTA}"]
+           "Renfe arranca en '1 adulto'. Objetivo: 2 adultos, 2 niños."]
 
     with sync_playwright() as pw:
         nav = pw.chromium.launch(headless=True)
         ctx = nav.new_context(locale="es-ES", timezone_id="Europe/Madrid",
+                              reduced_motion="reduce",
                               viewport={"width": 1440, "height": 950})
         page = ctx.new_page()
         page.set_default_timeout(20_000)
-
-        page.goto(RENFE, wait_until="domcontentloaded", timeout=60_000)
-        try:
-            page.click("#onetrust-accept-btn-handler", timeout=5000)
-        except PWTimeout:
-            pass
-        page.wait_for_timeout(1200)
-
-        page.fill("#origin", "Madrid")
-        page.wait_for_timeout(1200)
-        page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
-        page.fill("#destination", "Barcelona")
-        page.wait_for_timeout(1200)
-        page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
-
-        inf.append("\n### FECHAS")
-        page.click("#first-input", timeout=8000)
-        page.wait_for_timeout(1000)
-        elegir_fecha(page, IDA, inf)
-        page.wait_for_timeout(400)
-        elegir_fecha(page, VUELTA, inf)
-        page.wait_for_timeout(400)
-        for sel in ["button:has-text('Aceptar')", "button:has-text('Listo')"]:
+        for etiqueta, o, d, f in CASOS:
             try:
-                page.click(sel, timeout=3000); break
-            except Exception:
-                continue
-
-        inf.append("\n### PASAJEROS")
-        try:
-            page.click("#passengersSelection", timeout=6000)
-            page.wait_for_timeout(800)
-            page.click("[aria-label='Añadir adulto']", timeout=3000)
-            page.wait_for_timeout(350)
-            page.click("[aria-label='Añadir niño mayor de 4']", timeout=3000)
-            page.wait_for_timeout(350)
-            page.click("[aria-label='Añadir niño mayor de 4']", timeout=3000)
-            page.wait_for_timeout(350)
-            page.click("button:has-text('Listo')", timeout=4000)
-            page.wait_for_timeout(600)
-            v = page.locator("#passengersSelection").first.get_attribute("value")
-            inf.append(f"  value del desplegable tras tocarlo: '{v}'")
-        except Exception as e:
-            inf.append(f"  [!] fallo poniendo pasajeros: {str(e)[:150]}")
-
-        page.screenshot(path=str(DIAG / "3-antes-de-buscar.png"))
-        antes_url = page.url
-        antes_pestanas = len(ctx.pages)
-
-        inf.append("\n### PULSAR BUSCAR")
-        modo = "no pinchado"
-        try:
-            b = page.locator("button:has-text('Buscar billete')").first
-            b.scroll_into_view_if_needed(timeout=3000)
-            try:
-                b.click(timeout=8000); modo = "click normal"
-            except Exception:
-                b.evaluate("e => e.click()"); modo = "click por DOM"
-        except Exception as e:
-            inf.append(f"  [!] {str(e)[:150]}")
-        inf.append(f"  modo de click: {modo}")
-
-        # Esperar a que pase algo: navegacion, pestaña nueva o filas.
-        page.wait_for_timeout(6000)
-        try:
-            page.wait_for_load_state("networkidle", timeout=25_000)
-        except PWTimeout:
-            inf.append("  (networkidle no llego en 25s, seguimos igual)")
-
-        activa = [p for p in ctx.pages if not p.is_closed()][-1]
-        inf.append(f"\n  url antes: {antes_url}")
-        inf.append(f"  url ahora: {activa.url}")
-        inf.append(f"  titulo:    {activa.title()}")
-        inf.append(f"  pestañas:  {antes_pestanas} -> {len(ctx.pages)}"
-                   f"{'  (SE ABRIO UNA NUEVA)' if len(ctx.pages) > antes_pestanas else ''}")
-
-        activa.screenshot(path=str(DIAG / "4-resultados.png"))
-
-        # Reintento por si tarda en pintar
-        cands = []
-        for intento in range(6):
-            cands = activa.evaluate(JS_CANDIDATOS) or []
-            if cands:
-                inf.append(f"  filas detectadas en el intento {intento + 1}")
-                break
-            activa.wait_for_timeout(4000)
-
-        inf.append(f"\n### CANDIDATOS A FILA DE TREN ({len(cands)})")
-        if not cands:
-            inf.append("  NINGUNO. No hay ningun elemento con precio y hora a la vez.")
-            texto = (activa.inner_text("body") or "")[:2500]
-            inf.append(f"\n  Texto visible de la pagina (2500 primeros chars):\n{texto}")
-        else:
-            for c in cands[:20]:
-                inf.append(f"\n  <{c['tag']}> id='{c['id']}'\n    class='{c['cls']}'"
-                           f"\n    txt: {c['txt']}")
-
-        try:
-            (DIAG / "resultados.html").write_text(activa.content()[:400_000],
-                                                  encoding="utf-8")
-            inf.append("\nresultados.html guardado")
-        except Exception as e:
-            inf.append(f"\nno se pudo guardar el HTML: {str(e)[:120]}")
-
+                caso(page, inf, etiqueta, o, d, f)
+            except Exception as e:
+                inf.append(f"  [!] el caso {etiqueta} reventó: {str(e)[:200]}")
         nav.close()
 
     texto = "\n".join(inf)
