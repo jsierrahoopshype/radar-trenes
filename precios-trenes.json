@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-06T09:17:01+00:00",
+  "generado": "2026-09-06T10:16:12+00:00",
   "alerta": "El scraper no ha leido NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Ver diagnostico/.",
   "ventanas": {
     "noviembre": {
@@ -10,19 +10,19 @@
           "destino": "Cuenca",
           "referencia": 71,
           "precio": null,
-          "error": "la busqueda no devolvio ninguna lista de trenes"
+          "error": "no se pudo leer el trayecto de vuelta por separado"
         },
         {
           "destino": "Segovia",
           "referencia": 89,
           "precio": null,
-          "error": "la busqueda no devolvio ninguna lista de trenes"
+          "error": "no se pudo leer el trayecto de vuelta por separado"
         },
         {
           "destino": "Toledo",
           "referencia": 89,
           "precio": null,
-          "error": "la busqueda no devolvio ninguna lista de trenes"
+          "error": "no se pudo leer el trayecto de vuelta por separado"
         },
         {
           "destino": "Alicante",
