@@ -2,7 +2,7 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 10.
+Version 11.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
@@ -33,7 +33,16 @@ Historial, para no repetir errores:
       Arreglo: borrar cookies y almacenamiento ANTES DE CADA BUSQUEDA. Partiendo
       siempre de "1 adulto, 0 ninos", sumar lo que falta es determinista.
       Moraleja: el problema no era como contar, era no controlar el punto de
-      partida.
+      partida. FUNCIONO A MEDIAS: el punto de partida ya es siempre "1 adulto"
+      (noviembre dejo de derivar a 3+4), pero en las tres primeras rutas el
+      panel de pasajeros directamente NO SE ABRE y se quedan en 1 adulto.
+  v11 NO ARREGLA NADA A CIEGAS. Tres versiones seguidas con logicas de conteo
+      distintas han dado el mismo resultado, asi que el conteo no es la
+      variable: el panel no llega a abrirse. Esta version instrumenta ese
+      momento exacto (sonda_pax) y responde con elementFromPoint la unica
+      pregunta que queda: si hay algo TAPANDO #passengersSelection. Ademas
+      sube a 3 intentos con Escape + scroll arriba entre ellos, que es higiene,
+      no una hipotesis.
       a) Los pasajeros se fijan por DELTA sobre lo que ya hay, no sumando.
       b) UNIDADES: se compara precio por persona contra referencia/4. Sin
          inventar nada. Nunca se compara un "desde" con un total de cuatro.
@@ -346,7 +355,63 @@ def reset_sesion(page, ctx):
         pass
 
 
-def poner_pasajeros(page, pax):
+JS_SONDA_PAX = r"""
+() => {
+  const desc = e => e ? (e.tagName.toLowerCase()
+      + (e.id ? '#' + e.id : '')
+      + (e.className && typeof e.className === 'string' && e.className.trim()
+         ? '.' + e.className.trim().split(/\s+/).slice(0, 3).join('.') : '')) : 'nada';
+  const out = {};
+  const inp = document.querySelector('#passengersSelection');
+  out.existe = !!inp;
+  if (inp) {
+    out.value = inp.value;
+    const r = inp.getBoundingClientRect();
+    out.rect = [Math.round(r.x), Math.round(r.y),
+                Math.round(r.width), Math.round(r.height)];
+    out.dentro_de_pantalla = (r.top >= 0 && r.bottom <= innerHeight);
+    const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+    const top = document.elementFromPoint(cx, cy);
+    out.encima = desc(top);
+    out.encima_padres = [];
+    let p = top && top.parentElement;
+    for (let i = 0; i < 3 && p; i++) { out.encima_padres.push(desc(p)); p = p.parentElement; }
+    // La pregunta que de verdad importa: quien recibe el clic, el selector o
+    // algo que lo tapa.
+    out.el_clic_llega = !!(top && (top === inp || inp.contains(top) || top.contains(inp)));
+  }
+  const lp = document.querySelector('.lightpick');
+  out.lightpick = lp ? getComputedStyle(lp).display : 'no existe';
+  out.botones_adulto = document.querySelectorAll("[aria-label='Añadir adulto']").length;
+  const ot = document.querySelector('#onetrust-banner-sdk, .onetrust-pc-dark-filter');
+  out.banner_cookies = ot ? getComputedStyle(ot).display : 'no existe';
+  return out;
+}
+"""
+
+
+def sonda_pax(page, etiqueta):
+    """
+    Fotografia del estado en el momento exacto en que fallan los pasajeros.
+    No arregla nada: contesta la unica pregunta abierta, que es por que el panel
+    se abre en unas rutas y en otras no. La respuesta util no es un nombre de
+    clase, es elementFromPoint: dice si hay algo TAPANDO el selector.
+    """
+    lineas = [f"      [sonda pax] {etiqueta}"]
+    try:
+        for k, v in (page.evaluate(JS_SONDA_PAX) or {}).items():
+            lineas.append(f"        {k} = {v}")
+    except Exception as e:
+        lineas.append(f"        la sonda revento: {str(e)[:140]}")
+    print("\n".join(lineas), flush=True)
+    try:
+        DIAG.mkdir(exist_ok=True)
+        page.screenshot(path=str(DIAG / f"pax-{etiqueta}.png"))
+    except Exception:
+        pass
+
+
+def poner_pasajeros(page, pax, etiqueta="ruta"):
     """
     Pone 2 adultos + 2 ninos partiendo SIEMPRE de 1 adulto, 0 ninos, que es lo
     que garantiza reset_sesion(). Sin delta ni adivinanzas: se suma lo que falta
@@ -354,16 +419,30 @@ def poner_pasajeros(page, pax):
     """
     objetivo = (pax["adultos"], pax["ninos"])
 
-    for intento in range(2):
+    for intento in range(3):
         partida = contar_pasajeros(resumen_pasajeros(page))
         if partida == objetivo:
             return True, resumen_pasajeros(page)
 
+        # Higiene entre intentos: cerrar lo que haya abierto y volver arriba,
+        # que es donde vive el buscador.
+        if intento:
+            try:
+                page.keyboard.press("Escape")
+                page.evaluate("() => window.scrollTo(0, 0)")
+                page.wait_for_timeout(500)
+            except Exception:
+                pass
+
+        modo = None
         try:
-            click_robusto(page, "#passengersSelection", timeout=6000)
+            modo = click_robusto(page, "#passengersSelection", timeout=6000)
             page.wait_for_selector("[aria-label='Añadir adulto']", timeout=8000)
             page.wait_for_timeout(500)
-        except Exception:
+        except Exception as e:
+            print(f"      [pax] no se abrio el panel en el intento {intento + 1} "
+                  f"(modo de clic: {modo}): {str(e)[:120]}", flush=True)
+            sonda_pax(page, f"{etiqueta}-i{intento + 1}")
             page.wait_for_timeout(800)
             continue
 
@@ -395,7 +474,10 @@ def poner_pasajeros(page, pax):
             return True, resumen_pasajeros(page)
 
     final = resumen_pasajeros(page)
-    return contar_pasajeros(final) == objetivo, final
+    ok = contar_pasajeros(final) == objetivo
+    if not ok:
+        sonda_pax(page, f"{etiqueta}-final")
+    return ok, final
 
 
 def buscar_un_sentido(page, origen, destino, fecha, pax, ctx=None):
@@ -430,7 +512,8 @@ def buscar_un_sentido(page, origen, destino, fecha, pax, ctx=None):
             pass
 
     cerrar_paneles(page)
-    pax_ok, pax_txt = poner_pasajeros(page, pax)
+    etiqueta = re.sub(r"[^A-Za-z0-9]+", "-", f"{destino}-{fecha}").strip("-").lower()
+    pax_ok, pax_txt = poner_pasajeros(page, pax, etiqueta)
     cerrar_paneles(page)
 
     click_robusto(page, "button:has-text('Buscar billete')", timeout=10_000)
@@ -531,7 +614,7 @@ def main():
     # Cartel de version: si el log no empieza por esta linea, el fichero que se
     # esta ejecutando NO es este scraper (paso el 6 sep 2026: scraper.py del repo
     # tenia dentro el codigo de la sonda y el barrido nunca corrio).
-    print("=== RADAR DE TRENES scraper.py v10 ===", flush=True)
+    print("=== RADAR DE TRENES scraper.py v11 ===", flush=True)
     cfg = json.loads(RUTAS.read_text(encoding="utf-8"))
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
