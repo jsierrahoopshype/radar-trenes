@@ -1,6 +1,6 @@
 {
-  "generado": "2026-09-06T10:16:12+00:00",
-  "alerta": "El scraper no ha leido NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Ver diagnostico/.",
+  "generado": "2026-09-06T10:41:24+00:00",
+  "alerta": "El scraper no ha leido NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Ver el log.",
   "ventanas": {
     "noviembre": {
       "salida": "2026-11-06",
@@ -10,109 +10,19 @@
           "destino": "Cuenca",
           "referencia": 71,
           "precio": null,
-          "error": "no se pudo leer el trayecto de vuelta por separado"
+          "error": "no existe #first-input"
         },
         {
           "destino": "Segovia",
           "referencia": 89,
           "precio": null,
-          "error": "no se pudo leer el trayecto de vuelta por separado"
+          "error": "no existe #first-input"
         },
         {
           "destino": "Toledo",
           "referencia": 89,
           "precio": null,
-          "error": "no se pudo leer el trayecto de vuelta por separado"
-        },
-        {
-          "destino": "Alicante",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Albacete",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Valencia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Zaragoza",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Huesca",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Caceres",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Murcia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Ciudad Real",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Badajoz",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Malaga",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Lleida",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Valladolid",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Tarragona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Barcelona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Sevilla",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Castellon",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Girona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Granada",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
+          "error": "no existe #first-input"
         }
       ]
     },
@@ -132,96 +42,6 @@
         },
         {
           "destino": "Toledo",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Alicante",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Albacete",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Valencia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Zaragoza",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Huesca",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Caceres",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Murcia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Ciudad Real",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Badajoz",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Malaga",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Lleida",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Valladolid",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Tarragona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Barcelona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Sevilla",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Castellon",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Girona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Granada",
           "precio": null,
           "error": "no intentado: barrido abortado antes"
         }
@@ -245,96 +65,6 @@
           "destino": "Toledo",
           "precio": null,
           "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Alicante",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Albacete",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Valencia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Zaragoza",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Huesca",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Caceres",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Murcia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Ciudad Real",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Badajoz",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Malaga",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Lleida",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Valladolid",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Tarragona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Barcelona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Sevilla",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Castellon",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Girona",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
-        },
-        {
-          "destino": "Granada",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
         }
       ]
     }
@@ -344,6 +74,7 @@
     "fallidas": 3,
     "fuera_de_venta": 0,
     "intentadas": 3,
-    "pasajeros_mal": 0
+    "pasajeros_mal": 0,
+    "metodo": "dos billetes de ida sumados"
   }
 }
