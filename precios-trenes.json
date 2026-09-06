@@ -1,6 +1,6 @@
 {
-  "generado": "2026-09-06T14:54:31+00:00",
-  "alerta": "3 rutas con pasajeros mal fijados: precios NO fiables. Mirar pasajeros_leidos.",
+  "generado": "2026-09-06T20:37:51+00:00",
+  "alerta": null,
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
     "noviembre": {
@@ -9,62 +9,62 @@
       "rutas": [
         {
           "destino": "Cuenca",
-          "precio_por_persona": 14.0,
-          "precio_estimado_4": 56.0,
+          "precio_por_persona": 18.0,
+          "precio_estimado_4": 72.0,
           "referencia_total_4": 71,
           "referencia_por_persona": 17.75,
-          "variacion_pct": null,
+          "variacion_pct": 1.4,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
-          "pasajeros_aplicados": false,
-          "pasajeros_leidos": "1 adulto / 1 adulto",
-          "aviso": "OJO: el buscador decia '1 adulto' y '1 adulto'. Precio no fiable.",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
           "ida": {
             "salida": "06:30",
             "llegada": "07:32",
             "tren": "AVANT",
-            "precio_persona": 7.0
+            "precio_persona": 9.0
           },
           "vuelta": {
-            "salida": "22:15",
-            "llegada": "23:18",
+            "salida": "13:04",
+            "llegada": "14:08",
             "tren": "AVANT",
-            "precio_persona": 7.0
+            "precio_persona": 9.0
           },
           "mas_temprano": "06:15",
           "mas_tardio": "22:34",
-          "limpio": false,
-          "fila_cruda_ida": "06:30 h 1 horas 2 minutos 07:32 h y Abonos AVANT Precio más bajo Precio desde 7,00 € Plaza H disponible Cero emisiones",
+          "limpio": true,
+          "fila_cruda_ida": "06:30 h 1 horas 2 minutos 07:32 h y Abonos AVANT Precio más bajo Precio desde 9,00 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
           "destino": "Segovia",
-          "precio_por_persona": 24.8,
-          "precio_estimado_4": 99.2,
+          "precio_por_persona": 22.8,
+          "precio_estimado_4": 91.2,
           "referencia_total_4": 89,
           "referencia_por_persona": 22.25,
-          "variacion_pct": null,
+          "variacion_pct": 2.5,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
-          "pasajeros_aplicados": false,
-          "pasajeros_leidos": "1 adulto / 1 adulto",
-          "aviso": "OJO: el buscador decia '1 adulto' y '1 adulto'. Precio no fiable.",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
           "ida": {
             "salida": "17:30",
             "llegada": "17:57",
             "tren": null,
-            "precio_persona": 13.3
+            "precio_persona": 12.25
           },
           "vuelta": {
             "salida": "19:54",
             "llegada": "20:23",
             "tren": null,
-            "precio_persona": 11.5
+            "precio_persona": 10.55
           },
           "mas_temprano": "06:30",
           "mas_tardio": "21:58",
           "limpio": true,
-          "fila_cruda_ida": "17:30 h 0 horas 27 minutos 17:57 h Precio más bajo Precio desde 13,30 € Plaza H disponible",
+          "fila_cruda_ida": "17:30 h 0 horas 27 minutos 17:57 h Precio más bajo Precio desde 12,25 € Plaza H disponible",
           "error": null
         },
         {
@@ -73,12 +73,12 @@
           "precio_estimado_4": 111.2,
           "referencia_total_4": 89,
           "referencia_por_persona": 22.25,
-          "variacion_pct": null,
+          "variacion_pct": 24.9,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
-          "pasajeros_aplicados": false,
-          "pasajeros_leidos": "1 adulto / 1 adulto",
-          "aviso": "OJO: el buscador decia '1 adulto' y '1 adulto'. Precio no fiable.",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
           "ida": {
             "salida": "06:45",
             "llegada": "07:19",
@@ -200,6 +200,6 @@
     "fallidas": 0,
     "fuera_de_venta": 3,
     "intentadas": 8,
-    "pasajeros_mal": 3
+    "pasajeros_mal": 0
   }
 }
