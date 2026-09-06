@@ -1,6 +1,6 @@
 {
-  "generado": "2026-09-06T10:41:24+00:00",
-  "alerta": "El scraper no ha leido NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Ver el log.",
+  "generado": "2026-09-06T11:08:05+00:00",
+  "alerta": "Barrido abortado tras 3 fallos seguidos. 5 rutas leidas antes.",
   "ventanas": {
     "noviembre": {
       "salida": "2026-11-06",
@@ -9,20 +9,86 @@
         {
           "destino": "Cuenca",
           "referencia": 71,
-          "precio": null,
-          "error": "no existe #first-input"
+          "precio": 18.0,
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "variacion_pct": -74.6,
+          "ida": {
+            "salida": "06:30",
+            "llegada": "07:32",
+            "tren": "AVANT",
+            "precio": 9.0
+          },
+          "vuelta": {
+            "salida": "13:04",
+            "llegada": "14:08",
+            "tren": "AVANT",
+            "precio": 9.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "22:34",
+          "limpio": true,
+          "fila_cruda_ida": "06:30 h 1 horas 2 minutos 07:32 h y Abonos AVANT Precio más bajo Precio desde 9,00 € Plaza H disponible Cero emisiones",
+          "fila_cruda_vuelta": "13:04 h 1 horas 4 minutos 14:08 h y Abonos AVANT Precio más bajo Precio desde 9,00 € Plaza H disponible Cero emisiones",
+          "error": null
         },
         {
           "destino": "Segovia",
           "referencia": 89,
-          "precio": null,
-          "error": "no existe #first-input"
+          "precio": 22.8,
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "variacion_pct": -74.4,
+          "ida": {
+            "salida": "17:30",
+            "llegada": "17:57",
+            "tren": null,
+            "precio": 12.25
+          },
+          "vuelta": {
+            "salida": "19:54",
+            "llegada": "20:23",
+            "tren": null,
+            "precio": 10.55
+          },
+          "mas_temprano": "06:30",
+          "mas_tardio": "21:58",
+          "limpio": true,
+          "fila_cruda_ida": "17:30 h 0 horas 27 minutos 17:57 h Precio más bajo Precio desde 12,25 € Plaza H disponible",
+          "fila_cruda_vuelta": "19:54 h 0 horas 29 minutos 20:23 h Precio más bajo Precio desde 10,55 € Plaza H disponible",
+          "error": null
         },
         {
           "destino": "Toledo",
           "referencia": 89,
-          "precio": null,
-          "error": "no existe #first-input"
+          "precio": 27.8,
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "variacion_pct": -68.8,
+          "ida": {
+            "salida": "06:45",
+            "llegada": "07:19",
+            "tren": null,
+            "precio": 13.9
+          },
+          "vuelta": {
+            "salida": "09:25",
+            "llegada": "09:59",
+            "tren": null,
+            "precio": 13.9
+          },
+          "mas_temprano": "06:45",
+          "mas_tardio": "21:37",
+          "limpio": false,
+          "fila_cruda_ida": "06:45 h 0 horas 34 minutos 07:19 h Más rápido Precio más bajo Precio desde 13,90 € Plaza H disponible Cero emisiones",
+          "fila_cruda_vuelta": "09:25 h 0 horas 34 minutos 09:59 h Más rápido Precio más bajo Precio desde 13,90 € Plaza H disponible Cero emisiones",
+          "error": null
         }
       ]
     },
@@ -32,18 +98,65 @@
       "rutas": [
         {
           "destino": "Cuenca",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
+          "referencia": 71,
+          "precio": 29.6,
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": false,
+          "pasajeros_leidos": "3 adultos, 4 niños / 4 adultos, 5 niños",
+          "aviso": "OJO: el buscador decia '3 adultos, 4 niños' y '4 adultos, 5 niños', no 2 adultos + 2 niños. Precio NO comparable con la referencia.",
+          "variacion_pct": null,
+          "ida": {
+            "salida": "07:00",
+            "llegada": "08:03",
+            "tren": "AVANT",
+            "precio": 14.8
+          },
+          "vuelta": {
+            "salida": "19:05",
+            "llegada": "20:08",
+            "tren": "AVANT",
+            "precio": 14.8
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "22:34",
+          "limpio": true,
+          "fila_cruda_ida": "07:00 h 1 horas 3 minutos 08:03 h y Abonos AVANT Precio más bajo Precio desde 14,80 € Plaza H disponible Cero emisiones",
+          "fila_cruda_vuelta": "19:05 h 1 horas 3 minutos 20:08 h y Abonos AVANT Precio más bajo Precio desde 14,80 € Plaza H disponible Cero emisiones",
+          "error": null
         },
         {
           "destino": "Segovia",
-          "precio": null,
-          "error": "no intentado: barrido abortado antes"
+          "referencia": 89,
+          "precio": 26.15,
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": false,
+          "pasajeros_leidos": "4 adultos, 5 niños / 4 adultos, 5 niños",
+          "aviso": "OJO: el buscador decia '4 adultos, 5 niños' y '4 adultos, 5 niños', no 2 adultos + 2 niños. Precio NO comparable con la referencia.",
+          "variacion_pct": null,
+          "ida": {
+            "salida": "17:30",
+            "llegada": "17:57",
+            "tren": null,
+            "precio": 12.25
+          },
+          "vuelta": {
+            "salida": "09:38",
+            "llegada": "10:07",
+            "tren": null,
+            "precio": 13.9
+          },
+          "mas_temprano": "06:30",
+          "mas_tardio": "21:58",
+          "limpio": false,
+          "fila_cruda_ida": "17:30 h 0 horas 27 minutos 17:57 h Precio más bajo Precio desde 12,25 € Plaza H disponible",
+          "fila_cruda_vuelta": "09:38 h 0 horas 29 minutos 10:07 h Precio más bajo Precio desde 13,90 € Cero emisiones",
+          "error": null
         },
         {
           "destino": "Toledo",
+          "referencia": 89,
           "precio": null,
-          "error": "no intentado: barrido abortado antes"
+          "error": "sin filas tras buscar Toledo->Madrid (todas) 2026-12-08; url=https://venta.renfe.com/vol/buscarTrenEnlaces.do?c=_sZtk"
         }
       ]
     },
@@ -53,13 +166,15 @@
       "rutas": [
         {
           "destino": "Cuenca",
+          "referencia": 71,
           "precio": null,
-          "error": "no intentado: barrido abortado antes"
+          "error": "sin filas tras buscar Madrid (todas)->Cuenca 2027-02-12; url=https://venta.renfe.com/vol/buscarTrenEnlaces.do?c=_sZtk"
         },
         {
           "destino": "Segovia",
+          "referencia": 89,
           "precio": null,
-          "error": "no intentado: barrido abortado antes"
+          "error": "sin filas tras buscar Madrid (todas)->Segovia 2027-02-12; url=https://venta.renfe.com/vol/buscarTrenEnlaces.do?c=_sZtk"
         },
         {
           "destino": "Toledo",
@@ -70,11 +185,11 @@
     }
   },
   "resumen": {
-    "con_precio": 0,
+    "con_precio": 5,
     "fallidas": 3,
     "fuera_de_venta": 0,
-    "intentadas": 3,
-    "pasajeros_mal": 0,
-    "metodo": "dos billetes de ida sumados"
+    "intentadas": 8,
+    "pasajeros_mal": 2,
+    "metodo": "dos busquedas por ruta, precios sumados"
   }
 }
