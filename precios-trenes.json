@@ -1,6 +1,6 @@
 {
-  "generado": "2026-09-06T08:52:41+00:00",
-  "alerta": "El scraper no ha leido NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Ver diagnostico/ y lanzar la sonda.",
+  "generado": "2026-09-06T09:17:01+00:00",
+  "alerta": "El scraper no ha leido NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Ver diagnostico/.",
   "ventanas": {
     "noviembre": {
       "salida": "2026-11-06",
@@ -10,19 +10,19 @@
           "destino": "Cuenca",
           "referencia": 71,
           "precio": null,
-          "error": "ninguno de [\"button:has-text('Buscar billete')\", \"button[type='submit']\"] funciono (Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"button[type='submit']\")\n    - locator resolved )"
+          "error": "la busqueda no devolvio ninguna lista de trenes"
         },
         {
           "destino": "Segovia",
           "referencia": 89,
           "precio": null,
-          "error": "ninguno de [\"button:has-text('Buscar billete')\", \"button[type='submit']\"] funciono (Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"button[type='submit']\")\n    - locator resolved )"
+          "error": "la busqueda no devolvio ninguna lista de trenes"
         },
         {
           "destino": "Toledo",
           "referencia": 89,
           "precio": null,
-          "error": "ninguno de [\"button:has-text('Buscar billete')\", \"button[type='submit']\"] funciono (Page.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"button[type='submit']\")\n    - locator resolved )"
+          "error": "la busqueda no devolvio ninguna lista de trenes"
         },
         {
           "destino": "Alicante",
@@ -343,6 +343,7 @@
     "con_precio": 0,
     "fallidas": 3,
     "fuera_de_venta": 0,
-    "intentadas": 3
+    "intentadas": 3,
+    "pasajeros_mal": 0
   }
 }
