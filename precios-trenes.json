@@ -1,0 +1,342 @@
+{
+  "generado": "2026-09-06T08:40:32+00:00",
+  "alerta": "El scraper no ha podido leer NINGUNA ruta y se ha rendido tras 3 fallos seguidos. Renfe ha cambiado el maquetado o esta bloqueando al runner. Mirar diagnostico/ y lanzar la sonda.",
+  "ventanas": {
+    "noviembre": {
+      "salida": "2026-11-06",
+      "vuelta": "2026-11-09",
+      "rutas": [
+        {
+          "destino": "Cuenca",
+          "referencia": 71,
+          "precio": null,
+          "error": "no se pudo seleccionar la fecha 2026-11-06 (ultima cabecera vista: 'julio2030')"
+        },
+        {
+          "destino": "Segovia",
+          "referencia": 89,
+          "precio": null,
+          "error": "no se pudo seleccionar la fecha 2026-11-06 (ultima cabecera vista: 'julio2030')"
+        },
+        {
+          "destino": "Toledo",
+          "referencia": 89,
+          "precio": null,
+          "error": "no se pudo seleccionar la fecha 2026-11-06 (ultima cabecera vista: 'julio2030')"
+        },
+        {
+          "destino": "Alicante",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Albacete",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Valencia",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Zaragoza",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Huesca",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Caceres",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Murcia",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Ciudad Real",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Badajoz",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Malaga",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Lleida",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Valladolid",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Tarragona",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Barcelona",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Sevilla",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Castellon",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Girona",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Granada",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        }
+      ]
+    },
+    "diciembre": {
+      "salida": "2026-12-04",
+      "vuelta": "2026-12-08",
+      "rutas": [
+        {
+          "destino": "Cuenca",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Segovia",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Toledo",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Alicante",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Albacete",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Valencia",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Zaragoza",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Huesca",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Caceres",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Murcia",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Ciudad Real",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Badajoz",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Malaga",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Lleida",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Valladolid",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Tarragona",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Barcelona",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Sevilla",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Castellon",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Girona",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        },
+        {
+          "destino": "Granada",
+          "precio": null,
+          "error": "no intentado: barrido abortado antes"
+        }
+      ]
+    },
+    "febrero": {
+      "salida": "2027-02-12",
+      "vuelta": "2027-02-15",
+      "rutas": [
+        {
+          "destino": "Cuenca",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Segovia",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Toledo",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Alicante",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Albacete",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Valencia",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Zaragoza",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Huesca",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Caceres",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Murcia",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Ciudad Real",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Badajoz",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Malaga",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Lleida",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Valladolid",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Tarragona",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Barcelona",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Sevilla",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Castellon",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Girona",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        },
+        {
+          "destino": "Granada",
+          "precio": null,
+          "error": "fuera de venta todavia (Renfe abre a ~4 meses)"
+        }
+      ]
+    }
+  }
+}
