@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 """
-Sonda de diagnostico. ~1 minuto, no barre precios.
+Sonda de diagnostico, v3. Foco: LA PAGINA DE RESULTADOS.
 
-La primera sonda ya resolvio el calendario. Esta version se centra en lo unico
-que queda a oscuras: el selector de PASAJEROS. Renfe arranca en "1 adulto" y si
-no conseguimos ponerlo en 2 adultos + 2 ninos, los precios no valen para el radar.
+El calendario y los pasajeros ya estan resueltos y confirmados. Lo unico a oscuras
+es que aparece despues de pulsar "Buscar billete": si navega a otro dominio, si
+abre pestaña nueva, si mete un interstitial, y como son las filas de tren.
 
-Comprueba ademas que la seleccion de fecha funciona ya de verdad, calculando el
-data-time en hora de Madrid, que era el fallo original.
+Hace el camino completo una sola vez (Madrid-Barcelona) y vuelca:
+  - a donde acaba (url y titulo), y si se abrio otra pestaña
+  - los elementos que contienen a la vez un precio y una hora, con su clase real
+  - el HTML de la pagina de resultados
+  - capturas antes y despues de buscar
+Tarda ~1 minuto.
 """
 
-import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -22,7 +26,35 @@ DIAG = RAIZ / "diagnostico"
 RENFE = "https://www.renfe.com/es/es"
 MADRID = ZoneInfo("Europe/Madrid")
 
-FECHA_PRUEBA = "2026-11-06"     # dentro de los 4 meses de venta de Renfe
+IDA, VUELTA = "2026-11-06", "2026-11-09"
+
+# Mismo detector por forma que usa el scraper, pero devolviendo tambien la clase
+# real del elemento, que es lo que aqui interesa documentar.
+JS_CANDIDATOS = r"""
+() => {
+  const rePrecio = /(\d{1,4}[.,]\d{2}\s*€)|(\d{1,4}\s*€)/;
+  const reHora   = /\b[0-2]?\d:[0-5]\d\b/;
+  const out = [];
+  for (const el of document.querySelectorAll('div,li,article,tr,section,a')) {
+    const t = el.innerText || '';
+    if (t.length < 10 || t.length > 900) continue;
+    if (!rePrecio.test(t) || !reHora.test(t)) continue;
+    let hijoCumple = false;
+    for (const h of el.children) {
+      const ht = h.innerText || '';
+      if (rePrecio.test(ht) && reHora.test(ht)) { hijoCumple = true; break; }
+    }
+    if (hijoCumple) continue;
+    out.push({
+      tag: el.tagName,
+      cls: (typeof el.className === 'string' ? el.className : '').slice(0, 120),
+      id: el.id || '',
+      txt: t.replace(/\s+/g, ' ').slice(0, 200)
+    });
+  }
+  return out.slice(0, 30);
+}
+"""
 
 
 def ms_madrid(iso):
@@ -30,31 +62,29 @@ def ms_madrid(iso):
     return int(datetime(y, m, d, tzinfo=MADRID).timestamp() * 1000)
 
 
-def inspeccionar(page, etiqueta, selectores, inf):
-    inf.append(f"\n### {etiqueta}")
-    for sel in selectores:
+def elegir_fecha(page, iso, inf):
+    ms = ms_madrid(iso)
+    for i in range(24):
+        loc = page.locator(f".lightpick__day[data-time='{ms}']"
+                           ":not(.is-disabled):not(.is-previous-month)").first
+        if loc.count() and loc.is_visible():
+            loc.click(timeout=4000)
+            inf.append(f"  fecha {iso} pinchada (avanzando {i} meses)")
+            return True
         try:
-            loc = page.locator(sel)
-            n = loc.count()
-            if n == 0:
-                inf.append(f"  [ ] {sel}   (0)")
-                continue
-            p = loc.first
-            vis = p.is_visible()
-            try:
-                muestra = (p.inner_text() or "")[:70].replace("\n", " ")
-            except Exception:
-                muestra = ""
-            inf.append(f"  [{'X' if vis else '~'}] {sel}   ({n})  {muestra}")
-        except Exception as e:
-            inf.append(f"  [!] {sel}   ERROR {str(e)[:80]}")
+            page.click(".lightpick__next-action", timeout=4000)
+            page.wait_for_timeout(350)
+        except Exception:
+            break
+    inf.append(f"  [ ] fecha {iso} NO pinchada")
+    return False
 
 
 def main():
     DIAG.mkdir(exist_ok=True)
-    inf = ["SONDA RENFE v2 - foco en PASAJEROS",
+    inf = ["SONDA RENFE v3 - foco en PAGINA DE RESULTADOS",
            f"generado: {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
-           "Leyenda: [X] existe y visible · [~] existe oculto · [ ] no existe"]
+           f"ruta de prueba: Madrid -> Barcelona, {IDA} / {VUELTA}"]
 
     with sync_playwright() as pw:
         nav = pw.chromium.launch(headless=True)
@@ -76,94 +106,95 @@ def main():
         page.fill("#destination", "Barcelona")
         page.wait_for_timeout(1200)
         page.keyboard.press("ArrowDown"); page.keyboard.press("Enter")
-        inf.append("\norigen y destino rellenos con #origin / #destination")
 
-        # --- comprobar que la fecha YA se puede pinchar con el calculo correcto ---
+        inf.append("\n### FECHAS")
         page.click("#first-input", timeout=8000)
-        page.wait_for_timeout(1200)
-        ms = ms_madrid(FECHA_PRUEBA)
-        inf.append(f"\n### PRUEBA DE FECHA {FECHA_PRUEBA}")
-        inf.append(f"  data-time calculado en hora de Madrid: {ms}")
-
-        pinchada = False
-        for intento in range(24):
-            loc = page.locator(f".lightpick__day[data-time='{ms}']"
-                               ":not(.is-disabled):not(.is-previous-month)").first
-            if loc.count() and loc.is_visible():
-                loc.click(timeout=4000)
-                inf.append(f"  [X] PINCHADA tras avanzar {intento} meses")
-                pinchada = True
-                break
-            crudo = page.locator(f".lightpick__day[data-time='{ms}']").first
-            if crudo.count():
-                clases = crudo.get_attribute("class") or ""
-                inf.append(f"  celda encontrada pero con clases: {clases}")
-                if "is-disabled" in clases:
-                    inf.append("  -> deshabilitada: fuera de venta todavia")
-                    break
+        page.wait_for_timeout(1000)
+        elegir_fecha(page, IDA, inf)
+        page.wait_for_timeout(400)
+        elegir_fecha(page, VUELTA, inf)
+        page.wait_for_timeout(400)
+        for sel in ["button:has-text('Aceptar')", "button:has-text('Listo')"]:
             try:
-                page.click(".lightpick__next-action", timeout=4000)
-                page.wait_for_timeout(350)
-            except Exception:
-                break
-        if not pinchada:
-            inf.append("  [ ] NO se pudo pinchar. Revisar.")
-
-        page.screenshot(path=str(DIAG / "1-calendario.png"))
-
-        # --- lo importante de esta sonda: el panel de pasajeros ---
-        inf.append("\n### ABRIR PANEL DE PASAJEROS")
-        abierto = None
-        for sel in ["[class*='passenger'] button", "button[class*='passenger']",
-                    "#passengersSelector", "[class*='passenger']",
-                    "text=1 adulto", "[class*='pasajero']"]:
-            try:
-                page.click(sel, timeout=4000)
-                abierto = sel
-                inf.append(f"  abierto con: {sel}")
-                break
+                page.click(sel, timeout=3000); break
             except Exception:
                 continue
-        if not abierto:
-            inf.append("  [ ] no se pudo abrir el panel con ningun selector")
-        page.wait_for_timeout(1200)
-        page.screenshot(path=str(DIAG / "2-pasajeros.png"))
 
-        inspeccionar(page, "BOTONES DE SUMAR", [
-            "button[aria-label*='ñadir']", "button[aria-label*='umar']",
-            "button[aria-label*='ncrementar']", "[class*='plus']",
-            "button:has-text('+')", "[class*='add']", "[class*='increment']",
-        ], inf)
+        inf.append("\n### PASAJEROS")
+        try:
+            page.click("#passengersSelection", timeout=6000)
+            page.wait_for_timeout(800)
+            page.click("[aria-label='Añadir adulto']", timeout=3000)
+            page.wait_for_timeout(350)
+            page.click("[aria-label='Añadir niño mayor de 4']", timeout=3000)
+            page.wait_for_timeout(350)
+            page.click("[aria-label='Añadir niño mayor de 4']", timeout=3000)
+            page.wait_for_timeout(350)
+            page.click("button:has-text('Listo')", timeout=4000)
+            page.wait_for_timeout(600)
+            v = page.locator("#passengersSelection").first.get_attribute("value")
+            inf.append(f"  value del desplegable tras tocarlo: '{v}'")
+        except Exception as e:
+            inf.append(f"  [!] fallo poniendo pasajeros: {str(e)[:150]}")
 
-        inspeccionar(page, "CONTADORES / TIPOS DE PASAJERO", [
-            "[class*='adult']", "[class*='child']", "[class*='nino']",
-            "[class*='counter']", "input[type='number']", "select",
-        ], inf)
+        page.screenshot(path=str(DIAG / "3-antes-de-buscar.png"))
+        antes_url = page.url
+        antes_pestanas = len(ctx.pages)
 
-        # El volcado que de verdad resuelve: el HTML del panel abierto.
-        inf.append("\n### HTML DEL PANEL DE PASAJEROS")
-        guardado = False
-        for sel in ["[class*='passenger']", "[class*='pasajero']", "[role='dialog']"]:
+        inf.append("\n### PULSAR BUSCAR")
+        modo = "no pinchado"
+        try:
+            b = page.locator("button:has-text('Buscar billete')").first
+            b.scroll_into_view_if_needed(timeout=3000)
             try:
-                loc = page.locator(sel)
-                if not loc.count():
-                    continue
-                # nos quedamos con el contenedor mas grande, que sera el panel
-                mejor, mejor_len = None, 0
-                for i in range(min(loc.count(), 40)):
-                    h = loc.nth(i).evaluate("e => e.outerHTML")
-                    if len(h) > mejor_len:
-                        mejor, mejor_len = h, len(h)
-                if mejor and mejor_len > 200:
-                    (DIAG / "pasajeros.html").write_text(mejor[:200_000], encoding="utf-8")
-                    inf.append(f"  guardado desde {sel} ({mejor_len} chars)")
-                    inf.append(f"  primeros 1500 chars:\n{mejor[:1500]}")
-                    guardado = True
-                    break
-            except Exception as e:
-                inf.append(f"  error con {sel}: {str(e)[:100]}")
-        if not guardado:
-            inf.append("  no se pudo volcar el panel")
+                b.click(timeout=8000); modo = "click normal"
+            except Exception:
+                b.evaluate("e => e.click()"); modo = "click por DOM"
+        except Exception as e:
+            inf.append(f"  [!] {str(e)[:150]}")
+        inf.append(f"  modo de click: {modo}")
+
+        # Esperar a que pase algo: navegacion, pestaña nueva o filas.
+        page.wait_for_timeout(6000)
+        try:
+            page.wait_for_load_state("networkidle", timeout=25_000)
+        except PWTimeout:
+            inf.append("  (networkidle no llego en 25s, seguimos igual)")
+
+        activa = [p for p in ctx.pages if not p.is_closed()][-1]
+        inf.append(f"\n  url antes: {antes_url}")
+        inf.append(f"  url ahora: {activa.url}")
+        inf.append(f"  titulo:    {activa.title()}")
+        inf.append(f"  pestañas:  {antes_pestanas} -> {len(ctx.pages)}"
+                   f"{'  (SE ABRIO UNA NUEVA)' if len(ctx.pages) > antes_pestanas else ''}")
+
+        activa.screenshot(path=str(DIAG / "4-resultados.png"))
+
+        # Reintento por si tarda en pintar
+        cands = []
+        for intento in range(6):
+            cands = activa.evaluate(JS_CANDIDATOS) or []
+            if cands:
+                inf.append(f"  filas detectadas en el intento {intento + 1}")
+                break
+            activa.wait_for_timeout(4000)
+
+        inf.append(f"\n### CANDIDATOS A FILA DE TREN ({len(cands)})")
+        if not cands:
+            inf.append("  NINGUNO. No hay ningun elemento con precio y hora a la vez.")
+            texto = (activa.inner_text("body") or "")[:2500]
+            inf.append(f"\n  Texto visible de la pagina (2500 primeros chars):\n{texto}")
+        else:
+            for c in cands[:20]:
+                inf.append(f"\n  <{c['tag']}> id='{c['id']}'\n    class='{c['cls']}'"
+                           f"\n    txt: {c['txt']}")
+
+        try:
+            (DIAG / "resultados.html").write_text(activa.content()[:400_000],
+                                                  encoding="utf-8")
+            inf.append("\nresultados.html guardado")
+        except Exception as e:
+            inf.append(f"\nno se pudo guardar el HTML: {str(e)[:120]}")
 
         nav.close()
 
