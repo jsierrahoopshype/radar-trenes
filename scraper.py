@@ -2,32 +2,27 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 6. Dos cambios de fondo: se matan las animaciones y se hacen DOS
-busquedas de solo ida en vez de una de ida y vuelta.
+Version 7.
 
 Historial, para no repetir errores:
-  v1  Insistia 63 veces con el mismo fallo y agotaba los 45 min del job.
-      -> Se rinde a los 3 fallos seguidos. RESUELTO.
-  v2  data-time en UTC; Lightpick lo guarda en hora LOCAL DE MADRID.
-      -> zoneinfo("Europe/Madrid"). RESUELTO Y CONFIRMADO.
-  v3  Cerraba el panel de pasajeros con "Aceptar"; se llama "Listo". El panel
-      tapaba el boton de buscar. -> RESUELTO Y CONFIRMADO.
-  v4  Buscaba las filas por clases inventadas. -> Deteccion por forma. RESUELTO:
-      la v5 ya leia filas con precio y hora correctamente.
-  v5  El flujo de ida y vuelta devolvia el mismo listado dos veces, asi que la
-      salvaguarda (no inventar la vuelta) abortaba. Y el carrusel de la portada
-      hacia que Playwright nunca diera los elementos por estables:
-      "waiting for element to be stable".
-      -> v6: animaciones desactivadas por CSS, y dos busquedas de SOLO IDA
-         que se suman. Un listado por busqueda, sin flujo de dos pasos.
+  v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
+  v2  data-time en UTC; Lightpick usa hora LOCAL DE MADRID. RESUELTO.
+  v3  Cerraba el panel de pasajeros con "Aceptar"; se llama "Listo". RESUELTO.
+  v4  Filas por clases inventadas. -> Deteccion por forma. RESUELTO.
+  v5  Flujo de ida y vuelta devolvia el mismo listado dos veces; y el carrusel
+      impedia que los elementos fueran "estables".
+  v6  -> Animaciones desactivadas (bien) y dos busquedas de solo ida (bien),
+      PERO al pasar a solo ida Renfe repinta el bloque de fechas y #first-input
+      deja de existir. Cambiar una cosa rompio otra que funcionaba.
+  v7  -> El calendario se abre por bateria de candidatos + verificacion de que
+      .lightpick esta realmente visible, en vez de por un id fijo. Y si no se
+      logra pasar a solo ida, se cae con elegancia a ida y vuelta leyendo solo
+      la ida.
 
-NOTA DE METODO: dos billetes de ida pueden salir algo mas caros que un ida y
-vuelta con descuento de Renfe. Se marca en el JSON como metodo "dos_idas" para
-no comparar peras con manzanas sin saberlo. Preferimos un numero honesto y
-reproducible a uno mas bajo que no sabemos leer.
-
-DIAGNOSTICO: cuando algo falla, las filas detectadas se IMPRIMEN EN EL LOG, no
-solo en el artefacto. El log es el canal que de verdad llega.
+REGLA APRENDIDA, aplicada ya en tres sitios: no depender de nombres (ids, clases),
+sino de funcion verificable. Filas = "lo que tiene precio y hora". Calendario =
+"lo que hace aparecer .lightpick". Pasajeros = "lo que cambia el value del
+desplegable". Cada vez que me he saltado esa regla, he fallado.
 """
 
 import json
@@ -35,7 +30,7 @@ import os
 import re
 import sys
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -51,10 +46,8 @@ MADRID = ZoneInfo("Europe/Madrid")
 T = 20_000
 FALLOS_SEGUIDOS_MAX = 3
 MAX_DIAGNOSTICOS = 3
-LIMITE = int(os.environ.get("LIMITE", "0"))   # 0 = todos los destinos
+LIMITE = int(os.environ.get("LIMITE", "0"))
 
-# Sin esto, el carrusel de la portada gira eternamente y Playwright nunca da un
-# elemento por "estable". Fue la causa de "waiting for element to be stable".
 CSS_SIN_ANIMACION = """
 *, *::before, *::after {
   animation: none !important;
@@ -88,16 +81,35 @@ JS_HAY_FILAS = "() => { const f = (" + JS_FILAS.strip() + ")(); return f.length 
 
 JS_SOLO_IDA = r"""
 () => {
-  const els = document.querySelectorAll('label,button,span,div,a,input');
-  for (const e of els) {
+  for (const e of document.querySelectorAll('label,button,span,div,a,input')) {
     const t = ((e.innerText || e.value || '') + '').trim().toLowerCase();
     if (t === 'viaje solo ida' || t === 'solo ida' || t === 'sólo ida') {
-      e.click();
-      return true;
+      e.click(); return true;
     }
   }
   return false;
 }
+"""
+
+JS_ABRIR_FECHA = r"""
+() => {
+  for (const e of document.querySelectorAll('input,button')) {
+    const s = ((e.placeholder || '') + ' ' + (e.getAttribute('aria-label') || '')
+               + ' ' + (e.value || '')).toLowerCase();
+    if (s.includes('fecha') || s.includes('ida')) { e.click(); return true; }
+  }
+  return false;
+}
+"""
+
+# Diagnostico decisivo cuando algo del formulario no aparece.
+JS_INPUTS = r"""
+() => Array.from(document.querySelectorAll('input,button'))
+  .filter(e => e.offsetParent || e.getClientRects().length)
+  .slice(0, 60)
+  .map(e => `${e.tagName}#${e.id || '-'} ph='${e.placeholder || ''}' `
+            + `val='${(e.value || '').slice(0, 30)}' cls='`
+            + `${(typeof e.className === 'string' ? e.className : '').slice(0, 60)}'`);
 """
 
 
@@ -108,6 +120,10 @@ class FueraDeVenta(Exception):
 def ms_madrid(iso):
     y, m, d = map(int, iso.split("-"))
     return int(datetime(y, m, d, tzinfo=MADRID).timestamp() * 1000)
+
+
+def mas_dias(iso, n):
+    return (datetime.fromisoformat(iso) + timedelta(days=n)).strftime("%Y-%m-%d")
 
 
 def hhmm(t):
@@ -138,21 +154,61 @@ def click_robusto(page, selector, timeout=8000):
         loc.scroll_into_view_if_needed(timeout=2500)
     except Exception:
         pass
-    for intento in ("normal", "escape", "dom"):
+    for modo in ("normal", "escape", "dom"):
         try:
-            if intento == "normal":
+            if modo == "normal":
                 loc.click(timeout=timeout)
-                return "normal"
-            if intento == "escape":
+            elif modo == "escape":
                 page.keyboard.press("Escape")
                 page.wait_for_timeout(400)
                 loc.click(timeout=4000)
-                return "tras-escape"
-            loc.evaluate("e => e.click()")
-            return "dom"
+            else:
+                loc.evaluate("e => e.click()")
+            return modo
         except Exception:
             continue
-    raise RuntimeError(f"{selector} no se dejo pinchar de ninguna forma")
+    raise RuntimeError(f"{selector} no se dejo pinchar")
+
+
+def calendario_visible(page):
+    try:
+        loc = page.locator(".lightpick").first
+        return bool(loc.count() and loc.is_visible())
+    except Exception:
+        return False
+
+
+def abrir_calendario(page):
+    """
+    Abre el desplegable de fechas. No depende de un id fijo: prueba candidatos
+    y VERIFICA que .lightpick queda visible, que es la definicion funcional de
+    'el calendario se ha abierto'.
+    """
+    if calendario_visible(page):
+        return "ya-abierto"
+
+    for sel in ["#first-input", "input[placeholder*='Fecha']",
+                "input[placeholder*='fecha']", "[class*='daterange'] input",
+                ".lightpick__input", "#second-input", "[class*='daterange']"]:
+        try:
+            if not page.locator(sel).first.count():
+                continue
+            click_robusto(page, sel, timeout=5000)
+            page.wait_for_timeout(700)
+            if calendario_visible(page):
+                return sel
+        except Exception:
+            continue
+
+    try:
+        if page.evaluate(JS_ABRIR_FECHA):
+            page.wait_for_timeout(700)
+            if calendario_visible(page):
+                return "js"
+    except Exception:
+        pass
+
+    raise RuntimeError("no se pudo abrir el calendario (.lightpick nunca aparecio)")
 
 
 def aceptar_cookies(page):
@@ -163,18 +219,17 @@ def aceptar_cookies(page):
 
 
 def poner_solo_ida(page):
-    """Renfe arranca en ida y vuelta. Lo pasamos a solo ida."""
     for sel in ["label:has-text('Viaje solo ida')", "label:has-text('Solo ida')",
                 "button:has-text('Viaje solo ida')"]:
         try:
             page.click(sel, timeout=2500)
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(600)
             return True
         except Exception:
             continue
     try:
         if page.evaluate(JS_SOLO_IDA):
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(600)
             return True
     except Exception:
         pass
@@ -212,15 +267,16 @@ def elegir_fecha(page, iso):
 def cerrar_paneles(page):
     for sel in ["button:has-text('Aceptar')", "button:has-text('Listo')"]:
         try:
-            page.click(sel, timeout=2500)
+            page.click(sel, timeout=2000)
             page.wait_for_timeout(300)
         except Exception:
             continue
-    try:
-        page.keyboard.press("Escape")
-        page.wait_for_timeout(300)
-    except Exception:
-        pass
+    if calendario_visible(page):
+        try:
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(300)
+        except Exception:
+            pass
 
 
 def resumen_pasajeros(page):
@@ -252,14 +308,9 @@ def poner_pasajeros(page, pax):
     pulsar("[aria-label='Añadir adulto']", max(0, pax["adultos"] - 1))
     pulsar("[aria-label='Añadir niño mayor de 4']", pax["ninos"])
 
-    cerrado = False
-    for sel in ["button:has-text('Listo')"]:
-        try:
-            page.click(sel, timeout=4000)
-            cerrado = True
-        except Exception:
-            pass
-    if not cerrado:
+    try:
+        page.click("button:has-text('Listo')", timeout=4000)
+    except Exception:
         try:
             page.keyboard.press("Escape")
         except Exception:
@@ -273,12 +324,12 @@ def poner_pasajeros(page, pax):
 
 
 def buscar_un_sentido(page, origen, destino, fecha, pax):
-    """Una busqueda de SOLO IDA. Devuelve (filas, pax_ok, pax_txt)."""
+    """Una busqueda. Devuelve (filas, pax_ok, pax_txt, metodo)."""
     page.goto(RENFE, wait_until="domcontentloaded", timeout=45_000)
     aceptar_cookies(page)
     page.wait_for_timeout(600)
 
-    poner_solo_ida(page)
+    solo_ida = poner_solo_ida(page)
 
     page.fill("#origin", origen)
     page.wait_for_timeout(1000)
@@ -290,12 +341,20 @@ def buscar_un_sentido(page, origen, destino, fecha, pax):
     page.keyboard.press("ArrowDown")
     page.keyboard.press("Enter")
 
-    click_robusto(page, "#first-input", timeout=8000)
-    page.wait_for_timeout(800)
+    abrir_calendario(page)
     elegir_fecha(page, fecha)
     page.wait_for_timeout(400)
-    cerrar_paneles(page)
 
+    # Si no se pudo pasar a solo ida, el formulario sigue pidiendo dos fechas.
+    # Ponemos una de vuelta cualquiera y leemos solo el listado de ida.
+    if not solo_ida:
+        try:
+            elegir_fecha(page, mas_dias(fecha, 3))
+            page.wait_for_timeout(400)
+        except Exception:
+            pass
+
+    cerrar_paneles(page)
     pax_ok, pax_txt = poner_pasajeros(page, pax)
     cerrar_paneles(page)
 
@@ -308,11 +367,11 @@ def buscar_un_sentido(page, origen, destino, fecha, pax):
         raise RuntimeError(f"sin filas tras buscar {origen}->{destino} {fecha}; "
                            f"url={activa.url[:100]}")
 
-    return (activa.evaluate(JS_FILAS) or []), pax_ok, pax_txt
+    metodo = "solo_ida" if solo_ida else "ida_de_ida_y_vuelta"
+    return (activa.evaluate(JS_FILAS) or []), pax_ok, pax_txt, metodo
 
 
 def analizar(filas, etiqueta):
-    """De la lista de textos de fila saca el mas barato y las horas extremas."""
     horas, mejor, crudo = [], None, None
     for txt in filas:
         precio = eur(txt)
@@ -335,15 +394,15 @@ def barrer_ruta(page, cfg, ventana, destino):
     origen = cfg["origen"]["nombre"]
     pax = cfg["pasajeros"]
 
-    f_ida, pax_ok1, pax1 = buscar_un_sentido(page, origen, destino["nombre"],
+    f_i, ok1, pax1, met1 = buscar_un_sentido(page, origen, destino["nombre"],
                                              ventana["salida"], pax)
-    p_i, s_i, l_i, t_i, temp_i, tard_i, crudo_i = analizar(f_ida, "ida")
+    p_i, s_i, l_i, t_i, temp_i, _, crudo_i = analizar(f_i, "ida")
 
-    f_vta, pax_ok2, pax2 = buscar_un_sentido(page, destino["nombre"], origen,
+    f_v, ok2, pax2, met2 = buscar_un_sentido(page, destino["nombre"], origen,
                                              ventana["vuelta"], pax)
-    p_v, s_v, l_v, t_v, temp_v, tard_v, crudo_v = analizar(f_vta, "vuelta")
+    p_v, s_v, l_v, t_v, _, tard_v, crudo_v = analizar(f_v, "vuelta")
 
-    pax_ok = pax_ok1 and pax_ok2
+    pax_ok = ok1 and ok2
     hl = cfg["horario_limpio"]
     limpio = (antes(l_i, hl["ida_llegada_maxima"])
               and despues(s_v, hl["vuelta_salida_minima"])
@@ -355,7 +414,7 @@ def barrer_ruta(page, cfg, ventana, destino):
         "destino": destino["nombre"],
         "referencia": ref,
         "precio": total,
-        "metodo": "dos_idas",
+        "metodo": f"{met1}+{met2}",
         "pasajeros_aplicados": pax_ok,
         "pasajeros_leidos": f"{pax1} / {pax2}",
         "aviso": None if pax_ok else
@@ -383,7 +442,8 @@ def main():
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
     if LIMITE:
-        print(f"LIMITE={LIMITE}: solo {len(destinos)} destinos (modo validacion)")
+        print(f"LIMITE={LIMITE}: solo {len(destinos)} destinos (modo validacion)",
+              flush=True)
 
     res = {"generado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
            "alerta": "Barrido en curso, sin terminar.", "ventanas": {}}
@@ -423,8 +483,8 @@ def main():
                         sin_pax += 1
                     print(f"[ok] {ventana['id']}-{destino['nombre']}: {fila['precio']} € "
                           f"(ida {fila['ida']['precio']} + vuelta {fila['vuelta']['precio']}) "
-                          f"| pax: {fila['pasajeros_leidos']}")
-                    print(f"      fila ida: {fila['fila_cruda_ida'][:120]}")
+                          f"| {fila['metodo']} | pax: {fila['pasajeros_leidos']}", flush=True)
+                    print(f"      ida: {fila['fila_cruda_ida'][:130]}", flush=True)
 
                 except FueraDeVenta as e:
                     fuera += 1
@@ -432,32 +492,36 @@ def main():
                     filas.append({"destino": destino["nombre"],
                                   "referencia": destino.get("referencia"),
                                   "precio": None, "error": str(e)})
-                    print(f"[fuera de venta] {ventana['id']}-{destino['nombre']}")
+                    print(f"[fuera de venta] {ventana['id']}-{destino['nombre']}",
+                          flush=True)
 
                 except Exception as e:
                     fallos += 1
                     seguidos += 1
                     etq = f"{ventana['id']}-{destino['nombre']}".replace(" ", "_")
                     print(f"[fallo {seguidos}/{FALLOS_SEGUIDOS_MAX}] {etq}: {e}",
-                          file=sys.stderr)
+                          flush=True)
 
-                    # Lo que de verdad hace falta para arreglarlo: al LOG, no solo
-                    # al artefacto, que es lo que acaba llegandome.
                     if diags < MAX_DIAGNOSTICOS:
                         diags += 1
                         try:
                             act = [p for p in ctx.pages if not p.is_closed()][-1]
+                            print(f"      url: {act.url[:140]}", flush=True)
                             vistas = act.evaluate(JS_FILAS) or []
-                            print(f"      url: {act.url[:140]}", file=sys.stderr)
-                            print(f"      filas detectadas: {len(vistas)}", file=sys.stderr)
-                            for v in vistas[:12]:
-                                print(f"        · {v[:180]}", file=sys.stderr)
+                            print(f"      filas con precio y hora: {len(vistas)}",
+                                  flush=True)
+                            for v in vistas[:10]:
+                                print(f"        · {v[:170]}", flush=True)
+                            if not vistas:
+                                print("      inputs y botones visibles:", flush=True)
+                                for s in (act.evaluate(JS_INPUTS) or [])[:25]:
+                                    print(f"        · {s}", flush=True)
                             act.screenshot(path=str(DIAG / f"{etq}.png"))
                             (DIAG / f"{etq}.html").write_text(
                                 act.content()[:400_000], encoding="utf-8")
                         except Exception as e2:
                             print(f"      (no se pudo volcar: {str(e2)[:120]})",
-                                  file=sys.stderr)
+                                  flush=True)
 
                     filas.append({"destino": destino["nombre"],
                                   "referencia": destino.get("referencia"),
@@ -465,7 +529,7 @@ def main():
                     if seguidos >= FALLOS_SEGUIDOS_MAX:
                         rendido = True
                         print(f"\n{FALLOS_SEGUIDOS_MAX} fallos seguidos. Abortando.",
-                              file=sys.stderr)
+                              flush=True)
 
             res["ventanas"][ventana["id"]] = {
                 "salida": ventana["salida"], "vuelta": ventana["vuelta"],
@@ -490,11 +554,12 @@ def main():
 
     res["resumen"] = {"con_precio": ok, "fallidas": fallos, "fuera_de_venta": fuera,
                       "intentadas": total, "pasajeros_mal": sin_pax,
-                      "metodo": "dos billetes de ida sumados"}
+                      "metodo": "dos busquedas por ruta, precios sumados"}
     res["generado"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     volcar(res)
-    print(f"\nHecho: {ok} con precio, {fuera} fuera de venta, {fallos} fallidas.")
-    print(f"Alerta: {res['alerta']}")
+    print(f"\nHecho: {ok} con precio, {fuera} fuera de venta, {fallos} fallidas.",
+          flush=True)
+    print(f"Alerta: {res['alerta']}", flush=True)
     return 1 if (ok == 0 and fuera == 0) else 0
 
 
