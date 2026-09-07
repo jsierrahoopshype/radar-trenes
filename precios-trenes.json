@@ -1,6 +1,6 @@
 {
-  "generado": "2026-09-07T15:21:08+00:00",
-  "alerta": null,
+  "generado": "2026-09-07T20:43:26+00:00",
+  "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
     "noviembre": {
@@ -9,11 +9,11 @@
       "rutas": [
         {
           "destino": "Cuenca",
-          "precio_por_persona": 18.0,
-          "precio_estimado_4": 72.0,
+          "precio_por_persona": 23.8,
+          "precio_estimado_4": 95.2,
           "referencia_total_4": 71,
           "referencia_por_persona": 17.75,
-          "variacion_pct": 1.4,
+          "variacion_pct": 34.1,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -26,10 +26,10 @@
             "precio_persona": 9.0
           },
           "vuelta": {
-            "salida": "13:04",
-            "llegada": "14:08",
+            "salida": "10:05",
+            "llegada": "11:08",
             "tren": "AVANT",
-            "precio_persona": 9.0
+            "precio_persona": 14.8
           },
           "mas_temprano": "06:15",
           "mas_tardio": "22:34",
@@ -95,6 +95,522 @@
           "mas_tardio": "21:37",
           "limpio": false,
           "fila_cruda_ida": "06:45 h 0 horas 34 minutos 07:19 h Más rápido Precio más bajo Precio desde 13,90 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Alicante",
+          "precio_por_persona": 34.0,
+          "precio_estimado_4": 136.0,
+          "referencia_total_4": 106,
+          "referencia_por_persona": 26.5,
+          "variacion_pct": 28.3,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "06:15",
+            "llegada": "08:48",
+            "tren": null,
+            "precio_persona": 19.0
+          },
+          "vuelta": {
+            "salida": "11:36",
+            "llegada": "14:08",
+            "tren": null,
+            "precio_persona": 15.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "21:05",
+          "limpio": true,
+          "fila_cruda_ida": "06:15 h 2 horas 33 minutos 08:48 h Precio más bajo Precio desde 19,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Albacete",
+          "precio_por_persona": 30.3,
+          "precio_estimado_4": 121.2,
+          "referencia_total_4": 108,
+          "referencia_por_persona": 27.0,
+          "variacion_pct": 12.2,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "11:05",
+            "llegada": "12:35",
+            "tren": "AVANT",
+            "precio_persona": 15.3
+          },
+          "vuelta": {
+            "salida": "12:30",
+            "llegada": "14:08",
+            "tren": "AVANT",
+            "precio_persona": 15.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "22:00",
+          "limpio": true,
+          "fila_cruda_ida": "11:05 h 1 horas 30 minutos 12:35 h y Abonos AVANT Más rápido Precio más bajo Precio desde 15,30 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Valencia",
+          "precio_por_persona": 28.0,
+          "precio_estimado_4": 112.0,
+          "referencia_total_4": 116,
+          "referencia_por_persona": 29.0,
+          "variacion_pct": -3.4,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "06:30",
+            "llegada": "08:34",
+            "tren": null,
+            "precio_persona": 9.0
+          },
+          "vuelta": {
+            "salida": "21:12",
+            "llegada": "23:18",
+            "tren": null,
+            "precio_persona": 19.0
+          },
+          "mas_temprano": "06:30",
+          "mas_tardio": "21:12",
+          "limpio": false,
+          "fila_cruda_ida": "06:30 h 2 horas 4 minutos 08:34 h Precio más bajo Precio desde 9,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Zaragoza",
+          "precio_por_persona": 45.0,
+          "precio_estimado_4": 180.0,
+          "referencia_total_4": 126,
+          "referencia_por_persona": 31.5,
+          "variacion_pct": 42.9,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "12:27",
+            "llegada": "14:02",
+            "tren": null,
+            "precio_persona": 27.05
+          },
+          "vuelta": {
+            "salida": "08:55",
+            "llegada": "10:55",
+            "tren": null,
+            "precio_persona": 17.95
+          },
+          "mas_temprano": "06:27",
+          "mas_tardio": "21:49",
+          "limpio": false,
+          "fila_cruda_ida": "12:27 h 1 horas 35 minutos 14:02 h Precio más bajo Precio desde 27,05 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Huesca",
+          "precio_por_persona": 44.2,
+          "precio_estimado_4": 176.8,
+          "referencia_total_4": 130,
+          "referencia_por_persona": 32.5,
+          "variacion_pct": 36.0,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "19:00",
+            "llegada": "21:54",
+            "tren": null,
+            "precio_persona": 22.1
+          },
+          "vuelta": {
+            "salida": "08:05",
+            "llegada": "10:55",
+            "tren": null,
+            "precio_persona": 22.1
+          },
+          "mas_temprano": "19:00",
+          "mas_tardio": "08:05",
+          "limpio": false,
+          "fila_cruda_ida": "19:00 h 2 horas 54 minutos 21:54 h Más rápido Precio desde 22,10 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Caceres",
+          "precio_por_persona": 31.6,
+          "precio_estimado_4": 126.4,
+          "referencia_total_4": 139,
+          "referencia_por_persona": 34.75,
+          "variacion_pct": -9.1,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "08:51",
+            "llegada": "12:18",
+            "tren": null,
+            "precio_persona": 15.8
+          },
+          "vuelta": {
+            "salida": "07:17",
+            "llegada": "10:46",
+            "tren": null,
+            "precio_persona": 15.8
+          },
+          "mas_temprano": "08:51",
+          "mas_tardio": "19:00",
+          "limpio": false,
+          "fila_cruda_ida": "08:51 h 3 horas 27 minutos 12:18 h Precio más bajo Precio desde 15,80 € Plaza H disponible",
+          "error": null
+        },
+        {
+          "destino": "Murcia",
+          "precio_por_persona": 36.35,
+          "precio_estimado_4": 145.4,
+          "referencia_total_4": 165,
+          "referencia_por_persona": 41.25,
+          "variacion_pct": -11.9,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "11:05",
+            "llegada": "14:39",
+            "tren": null,
+            "precio_persona": 21.35
+          },
+          "vuelta": {
+            "salida": "10:32",
+            "llegada": "14:08",
+            "tren": null,
+            "precio_persona": 15.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "18:56",
+          "limpio": true,
+          "fila_cruda_ida": "11:05 h 3 horas 34 minutos 14:39 h Precio más bajo Precio desde 21,35 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Ciudad Real",
+          "precio_por_persona": 54.6,
+          "precio_estimado_4": 218.4,
+          "referencia_total_4": 168,
+          "referencia_por_persona": 42.0,
+          "variacion_pct": 30.0,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "09:00",
+            "llegada": "09:53",
+            "tren": null,
+            "precio_persona": 25.0
+          },
+          "vuelta": {
+            "salida": "08:22",
+            "llegada": "09:24",
+            "tren": null,
+            "precio_persona": 29.6
+          },
+          "mas_temprano": "06:25",
+          "mas_tardio": "22:38",
+          "limpio": false,
+          "fila_cruda_ida": "09:00 h 0 horas 53 minutos 09:53 h Precio más bajo Precio desde 25,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Badajoz",
+          "precio_por_persona": 43.1,
+          "precio_estimado_4": 172.4,
+          "referencia_total_4": 189,
+          "referencia_por_persona": 47.25,
+          "variacion_pct": -8.8,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "08:51",
+            "llegada": "13:38",
+            "tren": null,
+            "precio_persona": 21.55
+          },
+          "vuelta": {
+            "salida": "06:29",
+            "llegada": "10:46",
+            "tren": null,
+            "precio_persona": 21.55
+          },
+          "mas_temprano": "08:51",
+          "mas_tardio": "17:38",
+          "limpio": false,
+          "fila_cruda_ida": "08:51 h 4 horas 47 minutos 13:38 h Precio más bajo Precio desde 21,55 € Plaza H disponible",
+          "error": null
+        },
+        {
+          "destino": "Malaga",
+          "precio_por_persona": 71.7,
+          "precio_estimado_4": 286.8,
+          "referencia_total_4": 193,
+          "referencia_por_persona": 48.25,
+          "variacion_pct": 48.6,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:20",
+            "llegada": "10:35",
+            "tren": null,
+            "precio_persona": 32.7
+          },
+          "vuelta": {
+            "salida": "10:35",
+            "llegada": "13:49",
+            "tren": null,
+            "precio_persona": 39.0
+          },
+          "mas_temprano": "07:20",
+          "mas_tardio": "20:00",
+          "limpio": true,
+          "fila_cruda_ida": "07:20 h 3 horas 15 minutos 10:35 h Precio más bajo Precio desde 32,70 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Lleida",
+          "precio_por_persona": 56.5,
+          "precio_estimado_4": 226.0,
+          "referencia_total_4": 196,
+          "referencia_por_persona": 49.0,
+          "variacion_pct": 15.3,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "12:27",
+            "llegada": "14:50",
+            "tren": null,
+            "precio_persona": 28.25
+          },
+          "vuelta": {
+            "salida": "06:53",
+            "llegada": "09:40",
+            "tren": null,
+            "precio_persona": 28.25
+          },
+          "mas_temprano": "07:27",
+          "mas_tardio": "21:03",
+          "limpio": false,
+          "fila_cruda_ida": "12:27 h 2 horas 23 minutos 14:50 h Más rápido Precio más bajo Precio desde 28,25 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Valladolid",
+          "precio_por_persona": 22.7,
+          "precio_estimado_4": 90.8,
+          "referencia_total_4": 199,
+          "referencia_por_persona": 49.75,
+          "variacion_pct": -54.4,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "14:23",
+            "llegada": "15:18",
+            "tren": null,
+            "precio_persona": 7.0
+          },
+          "vuelta": {
+            "salida": "22:07",
+            "llegada": "23:20",
+            "tren": null,
+            "precio_persona": 15.7
+          },
+          "mas_temprano": "06:36",
+          "mas_tardio": "22:07",
+          "limpio": false,
+          "fila_cruda_ida": "14:23 h 0 horas 55 minutos 15:18 h Precio más bajo Precio desde 7,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Tarragona",
+          "precio_por_persona": 57.1,
+          "precio_estimado_4": 228.4,
+          "referencia_total_4": 216,
+          "referencia_por_persona": 54.0,
+          "variacion_pct": 5.7,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "12:50",
+            "llegada": "15:38",
+            "tren": null,
+            "precio_persona": 31.15
+          },
+          "vuelta": {
+            "salida": "13:24",
+            "llegada": "16:18",
+            "tren": null,
+            "precio_persona": 25.95
+          },
+          "mas_temprano": "07:27",
+          "mas_tardio": "20:34",
+          "limpio": true,
+          "fila_cruda_ida": "12:50 h 2 horas 48 minutos 15:38 h Precio más bajo Precio desde 31,15 € Plaza H disponible",
+          "error": null
+        },
+        {
+          "destino": "Barcelona",
+          "precio_por_persona": 63.0,
+          "precio_estimado_4": 252.0,
+          "referencia_total_4": 221,
+          "referencia_por_persona": 55.25,
+          "variacion_pct": 14.0,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "12:27",
+            "llegada": "16:09",
+            "tren": null,
+            "precio_persona": 34.35
+          },
+          "vuelta": {
+            "salida": "12:50",
+            "llegada": "16:18",
+            "tren": null,
+            "precio_persona": 28.65
+          },
+          "mas_temprano": "06:27",
+          "mas_tardio": "20:00",
+          "limpio": true,
+          "fila_cruda_ida": "12:27 h 3 horas 42 minutos 16:09 h Precio más bajo Precio desde 34,35 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Sevilla",
+          "precio_por_persona": 67.8,
+          "precio_estimado_4": 271.2,
+          "referencia_total_4": 224,
+          "referencia_por_persona": 56.0,
+          "variacion_pct": 21.1,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "09:00",
+            "llegada": "11:52",
+            "tren": null,
+            "precio_persona": 29.0
+          },
+          "vuelta": {
+            "salida": "09:34",
+            "llegada": "12:12",
+            "tren": null,
+            "precio_persona": 38.8
+          },
+          "mas_temprano": "07:00",
+          "mas_tardio": "20:52",
+          "limpio": false,
+          "fila_cruda_ida": "09:00 h 2 horas 52 minutos 11:52 h Precio más bajo Precio desde 29,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Castellón de la Plana",
+          "referencia_total_4": 236,
+          "precio_por_persona": null,
+          "error": "no se llego a la parrilla en Madrid (todas)->Castellón de la Plana 2026-11-06; url=https://www.renfe.com/es/es"
+        },
+        {
+          "destino": "Girona",
+          "precio_por_persona": 78.35,
+          "precio_estimado_4": 313.4,
+          "referencia_total_4": 263,
+          "referencia_por_persona": 65.75,
+          "variacion_pct": 19.2,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:27",
+            "llegada": "12:08",
+            "tren": null,
+            "precio_persona": 48.2
+          },
+          "vuelta": {
+            "salida": "11:54",
+            "llegada": "16:18",
+            "tren": null,
+            "precio_persona": 30.15
+          },
+          "mas_temprano": "07:27",
+          "mas_tardio": "17:51",
+          "limpio": true,
+          "fila_cruda_ida": "07:27 h 4 horas 41 minutos 12:08 h Precio más bajo Precio desde 48,20 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Granada",
+          "precio_por_persona": 105.95,
+          "precio_estimado_4": 423.8,
+          "referencia_total_4": 351,
+          "referencia_por_persona": 87.75,
+          "variacion_pct": 20.7,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:20",
+            "llegada": "10:54",
+            "tren": null,
+            "precio_persona": 57.05
+          },
+          "vuelta": {
+            "salida": "06:50",
+            "llegada": "10:26",
+            "tren": null,
+            "precio_persona": 48.9
+          },
+          "mas_temprano": "07:20",
+          "mas_tardio": "18:05",
+          "limpio": false,
+          "fila_cruda_ida": "07:20 h 3 horas 34 minutos 10:54 h Precio más bajo Precio desde 57,05 € Plaza H disponible Cero emisiones",
           "error": null
         }
       ]
@@ -168,6 +684,522 @@
           "referencia_total_4": 89,
           "precio_por_persona": null,
           "error": "parrilla sin trenes para Toledo->Madrid (todas) 2026-12-08 (fuera de venta o sin servicio ese dia)"
+        },
+        {
+          "destino": "Alicante",
+          "precio_por_persona": 30.0,
+          "precio_estimado_4": 120.0,
+          "referencia_total_4": 106,
+          "referencia_por_persona": 26.5,
+          "variacion_pct": 13.2,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "06:15",
+            "llegada": "08:48",
+            "tren": null,
+            "precio_persona": 15.0
+          },
+          "vuelta": {
+            "salida": "11:36",
+            "llegada": "14:08",
+            "tren": null,
+            "precio_persona": 15.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "21:05",
+          "limpio": true,
+          "fila_cruda_ida": "06:15 h 2 horas 33 minutos 08:48 h Precio más bajo Precio desde 15,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Albacete",
+          "precio_por_persona": 28.0,
+          "precio_estimado_4": 112.0,
+          "referencia_total_4": 108,
+          "referencia_por_persona": 27.0,
+          "variacion_pct": 3.7,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "06:15",
+            "llegada": "07:52",
+            "tren": "AVANT",
+            "precio_persona": 19.0
+          },
+          "vuelta": {
+            "salida": "12:30",
+            "llegada": "14:08",
+            "tren": "AVANT",
+            "precio_persona": 9.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "22:00",
+          "limpio": true,
+          "fila_cruda_ida": "06:15 h 1 horas 37 minutos 07:52 h y Abonos AVANT Precio más bajo Precio desde 19,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Valencia",
+          "precio_por_persona": 41.45,
+          "precio_estimado_4": 165.8,
+          "referencia_total_4": 116,
+          "referencia_por_persona": 29.0,
+          "variacion_pct": 42.9,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "06:30",
+            "llegada": "08:34",
+            "tren": null,
+            "precio_persona": 19.0
+          },
+          "vuelta": {
+            "salida": "07:42",
+            "llegada": "09:38",
+            "tren": null,
+            "precio_persona": 22.45
+          },
+          "mas_temprano": "06:30",
+          "mas_tardio": "21:12",
+          "limpio": false,
+          "fila_cruda_ida": "06:30 h 2 horas 4 minutos 08:34 h Precio más bajo Precio desde 19,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Zaragoza",
+          "precio_por_persona": 50.25,
+          "precio_estimado_4": 201.0,
+          "referencia_total_4": 126,
+          "referencia_por_persona": 31.5,
+          "variacion_pct": 59.5,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "19:00",
+            "llegada": "21:00",
+            "tren": null,
+            "precio_persona": 28.7
+          },
+          "vuelta": {
+            "salida": "08:55",
+            "llegada": "10:55",
+            "tren": null,
+            "precio_persona": 21.55
+          },
+          "mas_temprano": "06:27",
+          "mas_tardio": "21:49",
+          "limpio": false,
+          "fila_cruda_ida": "19:00 h 2 horas 21:00 h Precio más bajo Precio desde 28,70 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Huesca",
+          "precio_por_persona": 40.5,
+          "precio_estimado_4": 162.0,
+          "referencia_total_4": 130,
+          "referencia_por_persona": 32.5,
+          "variacion_pct": 24.6,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "19:00",
+            "llegada": "21:54",
+            "tren": null,
+            "precio_persona": 22.1
+          },
+          "vuelta": {
+            "salida": "08:05",
+            "llegada": "10:55",
+            "tren": null,
+            "precio_persona": 18.4
+          },
+          "mas_temprano": "19:00",
+          "mas_tardio": "08:05",
+          "limpio": false,
+          "fila_cruda_ida": "19:00 h 2 horas 54 minutos 21:54 h Más rápido Precio desde 22,10 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Caceres",
+          "precio_por_persona": 47.5,
+          "precio_estimado_4": 190.0,
+          "referencia_total_4": 139,
+          "referencia_por_persona": 34.75,
+          "variacion_pct": 36.7,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "08:51",
+            "llegada": "12:18",
+            "tren": null,
+            "precio_persona": 19.8
+          },
+          "vuelta": {
+            "salida": "09:48",
+            "llegada": "13:10",
+            "tren": null,
+            "precio_persona": 27.7
+          },
+          "mas_temprano": "08:51",
+          "mas_tardio": "19:00",
+          "limpio": false,
+          "fila_cruda_ida": "08:51 h 3 horas 27 minutos 12:18 h Precio más bajo Precio desde 19,80 € Plaza H disponible",
+          "error": null
+        },
+        {
+          "destino": "Murcia",
+          "precio_por_persona": 28.0,
+          "precio_estimado_4": 112.0,
+          "referencia_total_4": 165,
+          "referencia_por_persona": 41.25,
+          "variacion_pct": -32.1,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "06:15",
+            "llegada": "09:50",
+            "tren": null,
+            "precio_persona": 19.0
+          },
+          "vuelta": {
+            "salida": "10:32",
+            "llegada": "14:08",
+            "tren": null,
+            "precio_persona": 9.0
+          },
+          "mas_temprano": "06:15",
+          "mas_tardio": "18:56",
+          "limpio": true,
+          "fila_cruda_ida": "06:15 h 3 horas 35 minutos 09:50 h Precio más bajo Precio desde 19,00 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Ciudad Real",
+          "precio_por_persona": 48.15,
+          "precio_estimado_4": 192.6,
+          "referencia_total_4": 168,
+          "referencia_por_persona": 42.0,
+          "variacion_pct": 14.6,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:00",
+            "llegada": "07:53",
+            "tren": null,
+            "precio_persona": 13.15
+          },
+          "vuelta": {
+            "salida": "22:38",
+            "llegada": "23:43",
+            "tren": null,
+            "precio_persona": 35.0
+          },
+          "mas_temprano": "06:25",
+          "mas_tardio": "22:38",
+          "limpio": false,
+          "fila_cruda_ida": "07:00 h 0 horas 53 minutos 07:53 h Más rápido Precio más bajo Precio desde 13,15 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Badajoz",
+          "precio_por_persona": 64.55,
+          "precio_estimado_4": 258.2,
+          "referencia_total_4": 189,
+          "referencia_por_persona": 47.25,
+          "variacion_pct": 36.6,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "08:51",
+            "llegada": "13:38",
+            "tren": null,
+            "precio_persona": 26.9
+          },
+          "vuelta": {
+            "salida": "08:30",
+            "llegada": "13:10",
+            "tren": null,
+            "precio_persona": 37.65
+          },
+          "mas_temprano": "08:51",
+          "mas_tardio": "17:38",
+          "limpio": false,
+          "fila_cruda_ida": "08:51 h 4 horas 47 minutos 13:38 h Precio más bajo Precio desde 26,90 € Plaza H disponible",
+          "error": null
+        },
+        {
+          "destino": "Malaga",
+          "precio_por_persona": 81.7,
+          "precio_estimado_4": 326.8,
+          "referencia_total_4": 193,
+          "referencia_por_persona": 48.25,
+          "variacion_pct": 69.3,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "08:30",
+            "llegada": "11:24",
+            "tren": null,
+            "precio_persona": 40.85
+          },
+          "vuelta": {
+            "salida": "07:25",
+            "llegada": "10:26",
+            "tren": null,
+            "precio_persona": 40.85
+          },
+          "mas_temprano": "07:20",
+          "mas_tardio": "20:00",
+          "limpio": false,
+          "fila_cruda_ida": "08:30 h 2 horas 54 minutos 11:24 h Precio más bajo Precio desde 40,85 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Lleida",
+          "precio_por_persona": 65.9,
+          "precio_estimado_4": 263.6,
+          "referencia_total_4": 196,
+          "referencia_por_persona": 49.0,
+          "variacion_pct": 34.5,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:27",
+            "llegada": "09:58",
+            "tren": null,
+            "precio_persona": 37.65
+          },
+          "vuelta": {
+            "salida": "09:02",
+            "llegada": "11:44",
+            "tren": null,
+            "precio_persona": 28.25
+          },
+          "mas_temprano": "07:27",
+          "mas_tardio": "21:03",
+          "limpio": false,
+          "fila_cruda_ida": "07:27 h 2 horas 31 minutos 09:58 h Precio más bajo Precio desde 37,65 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Valladolid",
+          "precio_por_persona": 32.75,
+          "precio_estimado_4": 131.0,
+          "referencia_total_4": 199,
+          "referencia_por_persona": 49.75,
+          "variacion_pct": -34.2,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "09:25",
+            "llegada": "10:25",
+            "tren": null,
+            "precio_persona": 17.75
+          },
+          "vuelta": {
+            "salida": "21:23",
+            "llegada": "22:25",
+            "tren": null,
+            "precio_persona": 15.0
+          },
+          "mas_temprano": "06:36",
+          "mas_tardio": "22:07",
+          "limpio": true,
+          "fila_cruda_ida": "09:25 h 1 horas 10:25 h Precio más bajo Precio desde 17,75 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Tarragona",
+          "precio_por_persona": 72.65,
+          "precio_estimado_4": 290.6,
+          "referencia_total_4": 216,
+          "referencia_por_persona": 54.0,
+          "variacion_pct": 34.5,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:27",
+            "llegada": "10:28",
+            "tren": null,
+            "precio_persona": 41.5
+          },
+          "vuelta": {
+            "salida": "08:33",
+            "llegada": "11:44",
+            "tren": null,
+            "precio_persona": 31.15
+          },
+          "mas_temprano": "07:27",
+          "mas_tardio": "20:34",
+          "limpio": false,
+          "fila_cruda_ida": "07:27 h 3 horas 1 minutos 10:28 h Precio más bajo Precio desde 41,50 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Barcelona",
+          "precio_por_persona": 68.7,
+          "precio_estimado_4": 274.8,
+          "referencia_total_4": 221,
+          "referencia_por_persona": 55.25,
+          "variacion_pct": 24.3,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "20:30",
+            "llegada": "23:47",
+            "tren": null,
+            "precio_persona": 34.35
+          },
+          "vuelta": {
+            "salida": "08:00",
+            "llegada": "11:44",
+            "tren": null,
+            "precio_persona": 34.35
+          },
+          "mas_temprano": "06:27",
+          "mas_tardio": "20:00",
+          "limpio": false,
+          "fila_cruda_ida": "20:30 h 3 horas 17 minutos 23:47 h Precio más bajo Precio desde 34,35 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Sevilla",
+          "precio_por_persona": 52.3,
+          "precio_estimado_4": 209.2,
+          "referencia_total_4": 224,
+          "referencia_por_persona": 56.0,
+          "variacion_pct": -6.6,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:00",
+            "llegada": "09:48",
+            "tren": null,
+            "precio_persona": 23.3
+          },
+          "vuelta": {
+            "salida": "20:52",
+            "llegada": "23:43",
+            "tren": null,
+            "precio_persona": 29.0
+          },
+          "mas_temprano": "07:00",
+          "mas_tardio": "20:52",
+          "limpio": false,
+          "fila_cruda_ida": "07:00 h 2 horas 48 minutos 09:48 h Precio más bajo Precio desde 23,30 € Plaza H disponible Cero emisiones",
+          "error": null
+        },
+        {
+          "destino": "Castellón de la Plana",
+          "referencia_total_4": 236,
+          "precio_por_persona": null,
+          "error": "no se llego a la parrilla en Madrid (todas)->Castellón de la Plana 2026-12-04; url=https://www.renfe.com/es/es"
+        },
+        {
+          "destino": "Girona",
+          "precio_por_persona": 72.3,
+          "precio_estimado_4": 289.2,
+          "referencia_total_4": 263,
+          "referencia_por_persona": 65.75,
+          "variacion_pct": 10.0,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "12:50",
+            "llegada": "17:12",
+            "tren": null,
+            "precio_persona": 36.15
+          },
+          "vuelta": {
+            "salida": "17:51",
+            "llegada": "22:17",
+            "tren": null,
+            "precio_persona": 36.15
+          },
+          "mas_temprano": "07:27",
+          "mas_tardio": "17:51",
+          "limpio": true,
+          "fila_cruda_ida": "12:50 h 4 horas 22 minutos 17:12 h Precio más bajo Precio desde 36,15 € Plaza H disponible",
+          "error": null
+        },
+        {
+          "destino": "Granada",
+          "precio_por_persona": 138.55,
+          "precio_estimado_4": 554.2,
+          "referencia_total_4": 351,
+          "referencia_por_persona": 87.75,
+          "variacion_pct": 57.9,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "07:20",
+            "llegada": "10:54",
+            "tren": null,
+            "precio_persona": 57.05
+          },
+          "vuelta": {
+            "salida": "06:50",
+            "llegada": "10:26",
+            "tren": null,
+            "precio_persona": 81.5
+          },
+          "mas_temprano": "07:20",
+          "mas_tardio": "18:05",
+          "limpio": false,
+          "fila_cruda_ida": "07:20 h 3 horas 34 minutos 10:54 h Precio más bajo Precio desde 57,05 € Plaza H disponible Cero emisiones",
+          "error": null
         }
       ]
     },
@@ -191,15 +1223,105 @@
           "destino": "Toledo",
           "precio_por_persona": null,
           "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Alicante",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Albacete",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Valencia",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Zaragoza",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Huesca",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Caceres",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Murcia",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Ciudad Real",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Badajoz",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Malaga",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Lleida",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Valladolid",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Tarragona",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Barcelona",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Sevilla",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Castellón de la Plana",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Girona",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
+        },
+        {
+          "destino": "Granada",
+          "precio_por_persona": null,
+          "error": "no intentado: ventana sin trenes: aun no esta a la venta"
         }
       ]
     }
   },
   "resumen": {
-    "con_precio": 5,
-    "fallidas": 0,
+    "con_precio": 39,
+    "fallidas": 2,
     "fuera_de_venta": 3,
-    "intentadas": 8,
+    "intentadas": 44,
     "pasajeros_mal": 0
   }
 }
