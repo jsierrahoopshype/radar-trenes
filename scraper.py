@@ -2,7 +2,7 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 11.
+Version 12.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
@@ -42,7 +42,17 @@ Historial, para no repetir errores:
       momento exacto (sonda_pax) y responde con elementFromPoint la unica
       pregunta que queda: si hay algo TAPANDO #passengersSelection. Ademas
       sube a 3 intentos con Escape + scroll arriba entre ellos, que es higiene,
-      no una hipotesis.
+      no una hipotesis. LA SONDA LO CANTO A LA PRIMERA: rect [0,0,0,0].
+  v12 En la portada hay DOS #passengersSelection. El primero del DOM es el del
+      buscador PLEGADO de la cabecera (rf-header-topbar-search-integration),
+      mide 0x0 y siempre pone "1 adulto"; el bueno es el del buscador grande.
+      Al pedir .first se cogia el fantasma y el clic se perdia. Arreglo:
+      "#passengersSelection:visible", que es funcion (tiene tamano) y no nombre.
+      Ahorra los 8 s tirados por busqueda y las 24 capturas de 23 MB.
+      PENDIENTE Y NO ARREGLADO AQUI: "limpio" no exige hora minima de salida en
+      la ida, asi que coge el tren mas barato del dia (Valladolid, viernes a las
+      14:23) y lo compara contra una referencia hecha con salidas de despues de
+      las 17:00. Ese -55,8 % NO es un chollo, es otro producto.
       a) Los pasajeros se fijan por DELTA sobre lo que ya hay, no sumando.
       b) UNIDADES: se compara precio por persona contra referencia/4. Sin
          inventar nada. Nunca se compara un "desde" con un total de cuatro.
@@ -84,6 +94,8 @@ T = 20_000
 FALLOS_SEGUIDOS_MAX = 3
 SIN_TRENES_PARA_SALTAR_VENTANA = 2
 MAX_DIAGNOSTICOS = 3
+MAX_CAPTURAS_PAX = 6
+CAPTURAS_PAX = 0
 LIMITE = int(os.environ.get("LIMITE", "0"))
 
 CSS_SIN_ANIMACION = """
@@ -314,12 +326,22 @@ def cerrar_paneles(page):
             pass
 
 
+# En la portada hay DOS #passengersSelection: el del buscador plegado de la
+# cabecera (mide 0x0 y siempre pone "1 adulto") y el del buscador grande, que es
+# el bueno. ":visible" se queda con el que tiene tamano real. Medido el 6 sep:
+# el primero del DOM es el fantasma, y por eso los clics se perdian.
+PAX_SEL = "#passengersSelection:visible"
+
+
 def resumen_pasajeros(page):
-    try:
-        return (page.locator("#passengersSelection").first
-                .get_attribute("value") or "").strip()
-    except Exception:
-        return ""
+    for sel in (PAX_SEL, "#passengersSelection"):
+        try:
+            loc = page.locator(sel).first
+            if loc.count():
+                return (loc.get_attribute("value") or "").strip()
+        except Exception:
+            continue
+    return ""
 
 
 def contar_pasajeros(texto):
@@ -404,6 +426,12 @@ def sonda_pax(page, etiqueta):
     except Exception as e:
         lineas.append(f"        la sonda revento: {str(e)[:140]}")
     print("\n".join(lineas), flush=True)
+    # Capturas con tope: el barrido del 6 sep subio 24 pantallazos y 23 MB de
+    # artefacto. Con seis se diagnostica igual de bien.
+    global CAPTURAS_PAX
+    if CAPTURAS_PAX >= MAX_CAPTURAS_PAX:
+        return
+    CAPTURAS_PAX += 1
     try:
         DIAG.mkdir(exist_ok=True)
         page.screenshot(path=str(DIAG / f"pax-{etiqueta}.png"))
@@ -436,7 +464,7 @@ def poner_pasajeros(page, pax, etiqueta="ruta"):
 
         modo = None
         try:
-            modo = click_robusto(page, "#passengersSelection", timeout=6000)
+            modo = click_robusto(page, PAX_SEL, timeout=6000)
             page.wait_for_selector("[aria-label='Añadir adulto']", timeout=8000)
             page.wait_for_timeout(500)
         except Exception as e:
@@ -614,7 +642,7 @@ def main():
     # Cartel de version: si el log no empieza por esta linea, el fichero que se
     # esta ejecutando NO es este scraper (paso el 6 sep 2026: scraper.py del repo
     # tenia dentro el codigo de la sonda y el barrido nunca corrio).
-    print("=== RADAR DE TRENES scraper.py v11 ===", flush=True)
+    print("=== RADAR DE TRENES scraper.py v12 ===", flush=True)
     cfg = json.loads(RUTAS.read_text(encoding="utf-8"))
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
