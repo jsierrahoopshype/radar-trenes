@@ -2,7 +2,7 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 12.
+Version 13.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
@@ -48,7 +48,15 @@ Historial, para no repetir errores:
       mide 0x0 y siempre pone "1 adulto"; el bueno es el del buscador grande.
       Al pedir .first se cogia el fantasma y el clic se perdia. Arreglo:
       "#passengersSelection:visible", que es funcion (tiene tamano) y no nombre.
-      Ahorra los 8 s tirados por busqueda y las 24 capturas de 23 MB.
+      A MEDIAS: el log del 7 sep dijo "no existe #passengersSelection:visible" en
+      las 44 rutas. O sea que en ese instante NINGUNO de los dos es visible: el
+      buscador grande todavia no esta pintado. El acierto seguia viniendo del
+      reintento. Barrido completo igualmente: 39 precios en 46 min.
+  v13 Consecuencia de lo anterior: ESPERAR a que el selector visible exista antes
+      de tocarlo (wait_for_selector state=visible). Quita los 44 intentos tirados
+      y el ruido de sondas. Ademas rutas.json pasa a "Castellón de la Plana": sin
+      tilde el autocompletado de Renfe no resolvia y la busqueda no se lanzaba,
+      que es por lo que Castellon fallaba en las dos ventanas.
       PENDIENTE Y NO ARREGLADO AQUI: "limpio" no exige hora minima de salida en
       la ida, asi que coge el tren mas barato del dia (Valladolid, viernes a las
       14:23) y lo compara contra una referencia hecha con salidas de despues de
@@ -447,6 +455,14 @@ def poner_pasajeros(page, pax, etiqueta="ruta"):
     """
     objetivo = (pax["adultos"], pax["ninos"])
 
+    # El buscador grande tarda en pintarse. Sin esta espera, el primer intento
+    # se estrella siempre con "no existe #passengersSelection:visible" y se
+    # tiran 44 intentos por barrido. Medido en el log del 7 sep.
+    try:
+        page.wait_for_selector(PAX_SEL, state="visible", timeout=15_000)
+    except Exception:
+        pass
+
     for intento in range(3):
         partida = contar_pasajeros(resumen_pasajeros(page))
         if partida == objetivo:
@@ -642,7 +658,7 @@ def main():
     # Cartel de version: si el log no empieza por esta linea, el fichero que se
     # esta ejecutando NO es este scraper (paso el 6 sep 2026: scraper.py del repo
     # tenia dentro el codigo de la sonda y el barrido nunca corrio).
-    print("=== RADAR DE TRENES scraper.py v12 ===", flush=True)
+    print("=== RADAR DE TRENES scraper.py v13 ===", flush=True)
     cfg = json.loads(RUTAS.read_text(encoding="utf-8"))
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
