@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-07T15:00:52+00:00",
+  "generado": "2026-09-07T15:21:08+00:00",
   "alerta": null,
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
