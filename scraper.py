@@ -2,7 +2,7 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 14.
+Version 15.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
@@ -59,11 +59,18 @@ Historial, para no repetir errores:
       barrido paso de 46 a 53 minutos sin arreglar nada. Tambien cambie rutas.json
       a "Castellón de la Plana" creyendo que era la tilde: TAMBIEN FALSO, sigue
       fallando igual.
-  v14 Deshacer la espera de la v13 (vuelve a 46 min) y MEDIR lo que llevo tres
-      versiones dando por supuesto: CUANTOS #passengersSelection hay y que caja
-      tiene cada uno. La sonda solo miraba el primero con querySelector, asi que
-      "hay dos" nunca fue un dato, era una suposicion mia repetida. Sin ese numero
-      no se toca nada mas.
+  v14 Deshacer la espera de la v13 y MEDIR de una vez cuantos #passengersSelection
+      hay. RESULTADO: cuantos = 1, cajas = ["BUTTON[0x0] val='1 adulto'"].
+      SOLO HAY UNO. Mi historia de "hay dos, el de la cabecera es un fantasma" era
+      FALSA, y encima sostuvo las versiones 12 y 13. Tres versiones sobre un
+      elemento inventado.
+  v15 Con el dato encima, la explicacion real es aburrida: hay UN boton que mide
+      0x0 mientras el calendario sigue abierto y la pagina esta scrolleada, y pasa
+      a medir de verdad despues del Escape + scrollTo(0,0). Por eso el intento 1
+      fallaba SIEMPRE y el intento 2 acertaba SIEMPRE: la diferencia no era esperar
+      mas, era esa higiene. Arreglo: hacerla tambien en el primer intento. No es
+      una hipotesis nueva, es mover al primer sitio el paso que ya funcionaba en el
+      segundo. Quita ~6 s por busqueda y todo el ruido de sondas.
       PENDIENTE Y NO ARREGLADO AQUI: "limpio" no exige hora minima de salida en
       la ida, asi que coge el tren mas barato del dia (Valladolid, viernes a las
       14:23) y lo compara contra una referencia hecha con salidas de despues de
@@ -471,25 +478,23 @@ def poner_pasajeros(page, pax, etiqueta="ruta"):
     """
     objetivo = (pax["adultos"], pax["ninos"])
 
-    # AQUI HABIA UNA ESPERA DE 15 s (v13) QUE NO SIRVIO PARA NADA: el elemento
-    # nunca llega a ser :visible en este punto, asi que la espera agotaba su
-    # timeout en las 44 rutas y el barrido paso de 46 a 53 minutos. Quitada.
-    # El reintento es lo que resuelve, y resuelve bien: 39 precios de 44.
-
     for intento in range(3):
         partida = contar_pasajeros(resumen_pasajeros(page))
         if partida == objetivo:
             return True, resumen_pasajeros(page)
 
-        # Higiene entre intentos: cerrar lo que haya abierto y volver arriba,
-        # que es donde vive el buscador.
-        if intento:
-            try:
-                page.keyboard.press("Escape")
-                page.evaluate("() => window.scrollTo(0, 0)")
-                page.wait_for_timeout(500)
-            except Exception:
-                pass
+        # ESTO VA EN TODOS LOS INTENTOS, INCLUIDO EL PRIMERO. Medido, no supuesto:
+        # solo hay UN #passengersSelection y mide 0x0 mientras el calendario sigue
+        # abierto y la pagina esta scrolleada. El intento 1 fallaba el 100 % de las
+        # veces sin esto y el intento 2 acertaba el 100 % con esto. No es una
+        # hipotesis nueva: es mover al primer sitio el paso que ya funcionaba en el
+        # segundo.
+        try:
+            page.keyboard.press("Escape")
+            page.evaluate("() => window.scrollTo(0, 0)")
+            page.wait_for_timeout(500)
+        except Exception:
+            pass
 
         modo = None
         try:
@@ -671,7 +676,7 @@ def main():
     # Cartel de version: si el log no empieza por esta linea, el fichero que se
     # esta ejecutando NO es este scraper (paso el 6 sep 2026: scraper.py del repo
     # tenia dentro el codigo de la sonda y el barrido nunca corrio).
-    print("=== RADAR DE TRENES scraper.py v14 ===", flush=True)
+    print("=== RADAR DE TRENES scraper.py v15 ===", flush=True)
     cfg = json.loads(RUTAS.read_text(encoding="utf-8"))
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
