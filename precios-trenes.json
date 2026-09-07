@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-07T09:46:53+00:00",
+  "generado": "2026-09-07T12:00:45+00:00",
   "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
@@ -548,10 +548,10 @@
           "error": null
         },
         {
-          "destino": "Castellon",
+          "destino": "Castellón de la Plana",
           "referencia_total_4": 236,
           "precio_por_persona": null,
-          "error": "no se llego a la parrilla en Madrid (todas)->Castellon 2026-11-06; url=https://www.renfe.com/es/es"
+          "error": "no se llego a la parrilla en Madrid (todas)->Castellón de la Plana 2026-11-06; url=https://www.renfe.com/es/es"
         },
         {
           "destino": "Girona",
@@ -1136,10 +1136,10 @@
           "error": null
         },
         {
-          "destino": "Castellon",
+          "destino": "Castellón de la Plana",
           "referencia_total_4": 236,
           "precio_por_persona": null,
-          "error": "no se llego a la parrilla en Madrid (todas)->Castellon 2026-12-04; url=https://www.renfe.com/es/es"
+          "error": "no se llego a la parrilla en Madrid (todas)->Castellón de la Plana 2026-12-04; url=https://www.renfe.com/es/es"
         },
         {
           "destino": "Girona",
@@ -1300,7 +1300,7 @@
           "error": "no intentado: ventana sin trenes: aun no esta a la venta"
         },
         {
-          "destino": "Castellon",
+          "destino": "Castellón de la Plana",
           "precio_por_persona": null,
           "error": "no intentado: ventana sin trenes: aun no esta a la venta"
         },
