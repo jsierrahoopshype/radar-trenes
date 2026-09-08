@@ -12,7 +12,8 @@
     ]
   },
   "horario_limpio": {
-    "_comentario": "Mismo criterio que usa el radar para vuelos. Ida: no llegar despues de esta hora. Vuelta: no salir antes de esta hora ni llegar despues del tope.",
+    "_comentario": "Mismo criterio que usa el radar para vuelos. IDA: no salir antes de ida_salida_minima (Jorge trabaja el viernes) ni llegar despues de ida_llegada_maxima. VUELTA: no salir antes de vuelta_salida_minima ni llegar despues del tope. El scraper elige el tren mas barato QUE CUMPLA esto, no el mas barato del dia. Cada ventana puede pisar estos valores.",
+    "ida_salida_minima": "17:00",
     "ida_llegada_maxima": "23:00",
     "vuelta_salida_minima": "10:00",
     "vuelta_llegada_maxima": "23:00"
@@ -36,7 +37,11 @@
       "salida": "2027-02-12",
       "vuelta": "2027-02-15",
       "ida_salida_minima": "07:00",
-      "_comentario": "12 y 15 no lectivos: se puede salir por la manana."
+      "_comentario": "12 y 15 no lectivos: se puede salir por la manana.",
+      "horario_limpio": {
+        "ida_salida_minima": "06:00"
+      },
+      "_nota": "El 12 de febrero de 2027 NO es lectivo: se puede salir por la manana, asi que aqui no hay suelo de las 17:00."
     }
   ],
   "destinos": [
