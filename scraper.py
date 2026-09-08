@@ -2,7 +2,7 @@
 """
 Radar de trenes: barre precios de Renfe y escribe precios-trenes.json.
 
-Version 15.
+Version 16.
 
 Historial, para no repetir errores:
   v1  Insistia 63 veces con el mismo fallo. -> Se rinde a los 3. RESUELTO.
@@ -71,7 +71,15 @@ Historial, para no repetir errores:
       mas, era esa higiene. Arreglo: hacerla tambien en el primer intento. No es
       una hipotesis nueva, es mover al primer sitio el paso que ya funcionaba en el
       segundo. Quita ~6 s por busqueda y todo el ruido de sondas.
-      PENDIENTE Y NO ARREGLADO AQUI: "limpio" no exige hora minima de salida en
+  v16 FILTRO DE HORA DE SALIDA (aprobado por Jorge el 8 sep). analizar() ya no
+      coge el tren mas barato del dia: coge el mas barato QUE CUMPLA EL HORARIO.
+      Con eso, comparar contra la referencia vuelve a significar algo. Si ninguno
+      cumple NO se pierde la lectura: se devuelve el mas barato del dia con
+      cumple_horario=False, variacion_pct=None y un aviso que dice por que.
+      rutas.json gana "ida_salida_minima": "17:00", y cada ventana puede pisarlo:
+      febrero de 2027 lo baja a 06:00 porque el 12 NO es lectivo.
+      Probado offline con cinco casos antes de gastarte 46 minutos de barrido.
+      YA NO PENDIENTE (era esto): "limpio" no exige hora minima de salida en
       la ida, asi que coge el tren mas barato del dia (Valladolid, viernes a las
       14:23) y lo compara contra una referencia hecha con salidas de despues de
       las 17:00. Ese -55,8 % NO es un chollo, es otro producto.
@@ -599,8 +607,19 @@ def buscar_un_sentido(page, origen, destino, fecha, pax, ctx=None):
     return (activa.evaluate(JS_FILAS) or []), pax_ok, pax_txt, metodo
 
 
-def analizar(filas, etiqueta):
-    horas, mejor, crudo = [], None, None
+def analizar(filas, etiqueta, salida_min=None, llegada_max=None):
+    """
+    Elige el tren mas barato QUE CUMPLA EL HORARIO, no el mas barato del dia.
+
+    Esta es la diferencia entre comparar y mentir. La tabla de referencia esta
+    hecha con salidas de despues de las 17:00 el viernes; hasta ahora el scraper
+    cogia el tren de las 14:23 y lo comparaba contra ella, lo que daba un
+    Valladolid a -55,8 % que no era una bajada de precio sino otro producto.
+
+    Si ningun tren cumple el horario NO se pierde la lectura: se devuelve el mas
+    barato del dia con cumple=False, y quien llame decide no compararlo.
+    """
+    candidatos, horas = [], []
     for txt in filas:
         precio = eur(txt)
         todas = re.findall(r"\b([0-2]?\d:[0-5]\d)\b", txt)
@@ -610,12 +629,36 @@ def analizar(filas, etiqueta):
                      if t in txt.upper()), None)
         if salida:
             horas.append(salida)
-        if precio is not None and (mejor is None or precio < mejor[0]):
-            mejor, crudo = (precio, salida, llegada, tren), txt
-    if mejor is None:
+        if precio is None:
+            continue
+        cumple = ((salida_min is None or despues(salida, salida_min))
+                  and (llegada_max is None or antes(llegada, llegada_max)))
+        candidatos.append({"precio": precio, "salida": salida, "llegada": llegada,
+                           "tren": tren, "cumple": cumple, "crudo": txt})
+
+    if not candidatos:
         raise RuntimeError(f"filas sin precio legible en {etiqueta}")
-    return (*mejor, min(horas) if horas else None,
-            max(horas) if horas else None, crudo)
+
+    barato_global = min(candidatos, key=lambda c: c["precio"])
+    limpios = [c for c in candidatos if c["cumple"]]
+    elegido = min(limpios, key=lambda c: c["precio"]) if limpios else barato_global
+
+    return {
+        "precio": elegido["precio"],
+        "salida": elegido["salida"],
+        "llegada": elegido["llegada"],
+        "tren": elegido["tren"],
+        "cumple_horario": bool(limpios),
+        # Lo que costaba antes de filtrar, solo como informacion. NO se compara
+        # con la referencia: es de otro horario.
+        "precio_mas_barato_del_dia": barato_global["precio"],
+        "salida_mas_barato_del_dia": barato_global["salida"],
+        "trenes_leidos": len(candidatos),
+        "trenes_en_horario": len(limpios),
+        "mas_temprano": min(horas) if horas else None,
+        "mas_tardio": max(horas) if horas else None,
+        "crudo": elegido["crudo"],
+    }
 
 
 def barrer_ruta(page, cfg, ventana, destino, ctx=None):
@@ -623,27 +666,49 @@ def barrer_ruta(page, cfg, ventana, destino, ctx=None):
     pax = cfg["pasajeros"]
     n_pax = pax["adultos"] + pax["ninos"]
 
+    # El horario base vive en cfg, pero cada ventana puede pisarlo. Hace falta:
+    # el 12 de febrero de 2027 NO es lectivo, asi que ahi si se puede salir por
+    # la manana y exigir las 17:00 tiraria las lecturas buenas.
+    hl = {**cfg["horario_limpio"], **(ventana.get("horario_limpio") or {})}
+
     f_i, ok1, pax1, met1 = buscar_un_sentido(page, origen, destino["nombre"],
                                              ventana["salida"], pax, ctx)
-    p_i, s_i, l_i, t_i, temp_i, _, crudo_i = analizar(f_i, "ida")
+    ida = analizar(f_i, "ida",
+                   hl.get("ida_salida_minima"), hl.get("ida_llegada_maxima"))
 
     f_v, ok2, pax2, met2 = buscar_un_sentido(page, destino["nombre"], origen,
                                              ventana["vuelta"], pax, ctx)
-    p_v, s_v, l_v, t_v, _, tard_v, crudo_v = analizar(f_v, "vuelta")
+    vuelta = analizar(f_v, "vuelta",
+                      hl.get("vuelta_salida_minima"), hl.get("vuelta_llegada_maxima"))
+
+    p_i, s_i, l_i, t_i, crudo_i = (ida["precio"], ida["salida"], ida["llegada"],
+                                   ida["tren"], ida["crudo"])
+    p_v, s_v, l_v, t_v = (vuelta["precio"], vuelta["salida"], vuelta["llegada"],
+                          vuelta["tren"])
+    temp_i, tard_v = ida["mas_temprano"], vuelta["mas_tardio"]
 
     pax_ok = ok1 and ok2
-    hl = cfg["horario_limpio"]
-    limpio = (antes(l_i, hl["ida_llegada_maxima"])
-              and despues(s_v, hl["vuelta_salida_minima"])
-              and antes(l_v, hl["vuelta_llegada_maxima"]))
+    limpio = ida["cumple_horario"] and vuelta["cumple_horario"]
 
     # UNIDADES. Lo medido es "desde" POR PERSONA. La referencia es total de 4.
     # Se compara por persona contra referencia/4: mismas unidades, sin inventar.
     por_persona = round(p_i + p_v, 2)
     ref_total = destino.get("referencia")
     ref_persona = round(ref_total / n_pax, 2) if ref_total else None
+    # SOLO se compara si ademas de los pasajeros correctos el horario cuadra.
+    # Un precio de otro horario no es un precio mas bajo, es otro viaje.
     var = (round((por_persona - ref_persona) / ref_persona * 100, 1)
-           if (ref_persona and pax_ok) else None)
+           if (ref_persona and pax_ok and limpio) else None)
+
+    motivos = []
+    if not pax_ok:
+        motivos.append(f"el buscador decia '{pax1}' y '{pax2}'")
+    if not ida["cumple_horario"]:
+        motivos.append(f"ninguna ida sale despues de {hl.get('ida_salida_minima')} "
+                       f"(la mas barata sale a las {s_i})")
+    if not vuelta["cumple_horario"]:
+        motivos.append(f"ninguna vuelta cumple el horario "
+                       f"(la mas barata sale a las {s_v})")
 
     return {
         "destino": destino["nombre"],
@@ -656,10 +721,20 @@ def barrer_ruta(page, cfg, ventana, destino, ctx=None):
         "metodo": f"{met1}+{met2}",
         "pasajeros_aplicados": pax_ok,
         "pasajeros_leidos": f"{pax1} / {pax2}",
-        "aviso": None if pax_ok else
-                 f"OJO: el buscador decia '{pax1}' y '{pax2}'. Precio no fiable.",
-        "ida": {"salida": s_i, "llegada": l_i, "tren": t_i, "precio_persona": p_i},
-        "vuelta": {"salida": s_v, "llegada": l_v, "tren": t_v, "precio_persona": p_v},
+        "aviso": None if not motivos else
+                 "NO COMPARABLE: " + "; ".join(motivos) + ".",
+        "ida": {"salida": s_i, "llegada": l_i, "tren": t_i, "precio_persona": p_i,
+                "en_horario": ida["cumple_horario"],
+                "trenes_en_horario": ida["trenes_en_horario"],
+                "trenes_leidos": ida["trenes_leidos"],
+                "mas_barato_del_dia": ida["precio_mas_barato_del_dia"],
+                "sale_el_mas_barato_a": ida["salida_mas_barato_del_dia"]},
+        "vuelta": {"salida": s_v, "llegada": l_v, "tren": t_v, "precio_persona": p_v,
+                   "en_horario": vuelta["cumple_horario"],
+                   "trenes_en_horario": vuelta["trenes_en_horario"],
+                   "trenes_leidos": vuelta["trenes_leidos"],
+                   "mas_barato_del_dia": vuelta["precio_mas_barato_del_dia"],
+                   "sale_el_mas_barato_a": vuelta["salida_mas_barato_del_dia"]},
         "mas_temprano": temp_i,
         "mas_tardio": tard_v,
         "limpio": limpio,
@@ -676,7 +751,7 @@ def main():
     # Cartel de version: si el log no empieza por esta linea, el fichero que se
     # esta ejecutando NO es este scraper (paso el 6 sep 2026: scraper.py del repo
     # tenia dentro el codigo de la sonda y el barrido nunca corrio).
-    print("=== RADAR DE TRENES scraper.py v15 ===", flush=True)
+    print("=== RADAR DE TRENES scraper.py v16 ===", flush=True)
     cfg = json.loads(RUTAS.read_text(encoding="utf-8"))
     DIAG.mkdir(exist_ok=True)
     destinos = cfg["destinos"][:LIMITE] if LIMITE else cfg["destinos"]
@@ -733,13 +808,21 @@ def main():
                     v = fila["variacion_pct"]
                     comp = (f"ref/persona {fila['referencia_por_persona']} € | "
                             f"{'+' if v > 0 else ''}{v} %") if v is not None \
-                        else "sin comparar (pasajeros no fiables)"
+                        else "SIN COMPARAR"
                     print(f"[ok] {ventana['id']}-{destino['nombre']}: "
                           f"{fila['precio_por_persona']} €/persona "
                           f"(ida {fila['ida']['precio_persona']} + "
                           f"vuelta {fila['vuelta']['precio_persona']}) | {comp}",
                           flush=True)
-                    print(f"      pax: {fila['pasajeros_leidos']}", flush=True)
+                    print(f"      pax: {fila['pasajeros_leidos']} | "
+                          f"ida {fila['ida']['salida']} "
+                          f"({fila['ida']['trenes_en_horario']}/"
+                          f"{fila['ida']['trenes_leidos']} en horario) · "
+                          f"vuelta {fila['vuelta']['salida']} "
+                          f"({fila['vuelta']['trenes_en_horario']}/"
+                          f"{fila['vuelta']['trenes_leidos']})", flush=True)
+                    if fila["aviso"]:
+                        print(f"      {fila['aviso']}", flush=True)
 
                 except (FueraDeVenta, SinTrenes) as e:
                     fuera += 1
