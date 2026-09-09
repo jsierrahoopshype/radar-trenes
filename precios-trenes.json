@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-08T18:18:46+00:00",
+  "generado": "2026-09-09T09:44:19+00:00",
   "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
@@ -129,11 +129,11 @@
         },
         {
           "destino": "Alicante",
-          "precio_por_persona": 44.0,
-          "precio_estimado_4": 176.0,
+          "precio_por_persona": 48.0,
+          "precio_estimado_4": 192.0,
           "referencia_total_4": 106,
           "referencia_por_persona": 26.5,
-          "variacion_pct": 66.0,
+          "variacion_pct": 81.1,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -154,11 +154,11 @@
             "salida": "11:36",
             "llegada": "14:08",
             "tren": null,
-            "precio_persona": 15.0,
+            "precio_persona": 19.0,
             "en_horario": true,
             "trenes_en_horario": 9,
             "trenes_leidos": 13,
-            "mas_barato_del_dia": 15.0,
+            "mas_barato_del_dia": 19.0,
             "sale_el_mas_barato_a": "11:36"
           },
           "mas_temprano": "06:15",
@@ -196,8 +196,8 @@
             "tren": "AVANT",
             "precio_persona": 15.0,
             "en_horario": true,
-            "trenes_en_horario": 9,
-            "trenes_leidos": 13,
+            "trenes_en_horario": 10,
+            "trenes_leidos": 15,
             "mas_barato_del_dia": 15.0,
             "sale_el_mas_barato_a": "12:30"
           },
@@ -278,7 +278,7 @@
             "en_horario": true,
             "trenes_en_horario": 11,
             "trenes_leidos": 16,
-            "mas_barato_del_dia": 17.95,
+            "mas_barato_del_dia": 21.55,
             "sale_el_mas_barato_a": "08:55"
           },
           "mas_temprano": "06:27",
@@ -356,8 +356,8 @@
             "tren": null,
             "precio_persona": 27.7,
             "en_horario": true,
-            "trenes_en_horario": 2,
-            "trenes_leidos": 6,
+            "trenes_en_horario": 4,
+            "trenes_leidos": 8,
             "mas_barato_del_dia": 15.8,
             "sale_el_mas_barato_a": "07:17"
           },
@@ -596,8 +596,8 @@
             "tren": null,
             "precio_persona": 7.0,
             "en_horario": true,
-            "trenes_en_horario": 17,
-            "trenes_leidos": 27,
+            "trenes_en_horario": 19,
+            "trenes_leidos": 31,
             "mas_barato_del_dia": 7.0,
             "sale_el_mas_barato_a": "15:50"
           },
@@ -627,8 +627,8 @@
             "en_horario": true,
             "trenes_en_horario": 3,
             "trenes_leidos": 9,
-            "mas_barato_del_dia": 31.15,
-            "sale_el_mas_barato_a": "12:50"
+            "mas_barato_del_dia": 30.6,
+            "sale_el_mas_barato_a": "08:57"
           },
           "vuelta": {
             "salida": "13:24",
@@ -667,8 +667,8 @@
             "en_horario": true,
             "trenes_en_horario": 4,
             "trenes_leidos": 23,
-            "mas_barato_del_dia": 34.35,
-            "sale_el_mas_barato_a": "12:27"
+            "mas_barato_del_dia": 33.8,
+            "sale_el_mas_barato_a": "08:57"
           },
           "vuelta": {
             "salida": "12:50",
@@ -716,8 +716,8 @@
             "tren": null,
             "precio_persona": 45.0,
             "en_horario": true,
-            "trenes_en_horario": 14,
-            "trenes_leidos": 18,
+            "trenes_en_horario": 16,
+            "trenes_leidos": 20,
             "mas_barato_del_dia": 38.8,
             "sale_el_mas_barato_a": "09:34"
           },
@@ -762,8 +762,8 @@
             "tren": null,
             "precio_persona": 36.15,
             "en_horario": true,
-            "trenes_en_horario": 6,
-            "trenes_leidos": 11,
+            "trenes_en_horario": 7,
+            "trenes_leidos": 12,
             "mas_barato_del_dia": 36.15,
             "sale_el_mas_barato_a": "17:51"
           },
@@ -901,9 +901,43 @@
         },
         {
           "destino": "Toledo",
+          "precio_por_persona": 13.9,
+          "precio_estimado_4": 55.6,
           "referencia_total_4": 89,
-          "precio_por_persona": null,
-          "error": "parrilla sin trenes para Toledo->Madrid (todas) 2026-12-08 (fuera de venta o sin servicio ese dia)"
+          "referencia_por_persona": 22.25,
+          "variacion_pct": -37.5,
+          "unidad": "precio 'desde' por persona, ida + vuelta",
+          "metodo": "solo_ida+solo_ida",
+          "pasajeros_aplicados": true,
+          "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
+          "aviso": null,
+          "ida": {
+            "salida": "17:45",
+            "llegada": "18:19",
+            "tren": null,
+            "precio_persona": 13.9,
+            "en_horario": true,
+            "trenes_en_horario": 4,
+            "trenes_leidos": 15,
+            "mas_barato_del_dia": 13.9,
+            "sale_el_mas_barato_a": "06:45"
+          },
+          "vuelta": {
+            "salida": "12:25",
+            "llegada": "12:59",
+            "tren": null,
+            "precio_persona": 0.0,
+            "en_horario": true,
+            "trenes_en_horario": 1,
+            "trenes_leidos": 1,
+            "mas_barato_del_dia": 0.0,
+            "sale_el_mas_barato_a": "12:25"
+          },
+          "mas_temprano": "06:45",
+          "mas_tardio": "12:25",
+          "limpio": true,
+          "fila_cruda_ida": "17:45 h 0 horas 34 minutos 18:19 h Precio más bajo Precio desde 13,90 € Plaza H disponible Cero emisiones",
+          "error": null
         },
         {
           "destino": "Alicante",
@@ -1708,9 +1742,9 @@
     }
   },
   "resumen": {
-    "con_precio": 39,
+    "con_precio": 40,
     "fallidas": 2,
-    "fuera_de_venta": 3,
+    "fuera_de_venta": 2,
     "intentadas": 44,
     "pasajeros_mal": 0
   }
