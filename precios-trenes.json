@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-12T09:24:49+00:00",
+  "generado": "2026-09-13T10:17:30+00:00",
   "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
@@ -129,11 +129,11 @@
         },
         {
           "destino": "Alicante",
-          "precio_por_persona": 53.55,
-          "precio_estimado_4": 214.2,
+          "precio_por_persona": 48.0,
+          "precio_estimado_4": 192.0,
           "referencia_total_4": 106,
           "referencia_por_persona": 26.5,
-          "variacion_pct": 102.1,
+          "variacion_pct": 81.1,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -151,15 +151,15 @@
             "sale_el_mas_barato_a": "06:15"
           },
           "vuelta": {
-            "salida": "12:45",
-            "llegada": "15:08",
+            "salida": "11:36",
+            "llegada": "14:08",
             "tren": null,
-            "precio_persona": 24.55,
+            "precio_persona": 19.0,
             "en_horario": true,
             "trenes_en_horario": 9,
             "trenes_leidos": 13,
             "mas_barato_del_dia": 19.0,
-            "sale_el_mas_barato_a": "21:05"
+            "sale_el_mas_barato_a": "11:36"
           },
           "mas_temprano": "06:15",
           "mas_tardio": "21:05",
@@ -1061,21 +1061,21 @@
         },
         {
           "destino": "Zaragoza",
-          "precio_por_persona": 57.2,
-          "precio_estimado_4": 228.8,
+          "precio_por_persona": 58.85,
+          "precio_estimado_4": 235.4,
           "referencia_total_4": 126,
           "referencia_por_persona": 31.5,
-          "variacion_pct": 81.6,
+          "variacion_pct": 86.8,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "20:30",
-            "llegada": "22:06",
+            "salida": "19:00",
+            "llegada": "21:00",
             "tren": null,
-            "precio_persona": 27.05,
+            "precio_persona": 28.7,
             "en_horario": true,
             "trenes_en_horario": 5,
             "trenes_leidos": 15,
@@ -1096,7 +1096,7 @@
           "mas_temprano": "06:27",
           "mas_tardio": "21:49",
           "limpio": true,
-          "fila_cruda_ida": "20:30 h 1 horas 36 minutos 22:06 h Precio más bajo Precio desde 27,05 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "19:00 h 2 horas 21:00 h Precio desde 28,70 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
