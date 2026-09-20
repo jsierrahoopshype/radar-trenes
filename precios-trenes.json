@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-19T09:33:43+00:00",
+  "generado": "2026-09-20T10:02:15+00:00",
   "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
@@ -609,11 +609,11 @@
         },
         {
           "destino": "Tarragona",
-          "precio_por_persona": 57.1,
-          "precio_estimado_4": 228.4,
+          "precio_por_persona": 62.3,
+          "precio_estimado_4": 249.2,
           "referencia_total_4": 216,
           "referencia_por_persona": 54.0,
-          "variacion_pct": 5.7,
+          "variacion_pct": 15.4,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -631,15 +631,15 @@
             "sale_el_mas_barato_a": "08:57"
           },
           "vuelta": {
-            "salida": "18:34",
-            "llegada": "21:44",
+            "salida": "12:33",
+            "llegada": "15:44",
             "tren": null,
-            "precio_persona": 25.95,
+            "precio_persona": 31.15,
             "en_horario": true,
             "trenes_en_horario": 7,
             "trenes_leidos": 11,
             "mas_barato_del_dia": 25.95,
-            "sale_el_mas_barato_a": "18:34"
+            "sale_el_mas_barato_a": "20:34"
           },
           "mas_temprano": "07:27",
           "mas_tardio": "20:34",
@@ -678,8 +678,8 @@
             "en_horario": true,
             "trenes_en_horario": 13,
             "trenes_leidos": 20,
-            "mas_barato_del_dia": 28.65,
-            "sale_el_mas_barato_a": "20:00"
+            "mas_barato_del_dia": 34.35,
+            "sale_el_mas_barato_a": "05:50"
           },
           "mas_temprano": "06:27",
           "mas_tardio": "20:00",
@@ -804,7 +804,7 @@
             "en_horario": true,
             "trenes_en_horario": 5,
             "trenes_leidos": 8,
-            "mas_barato_del_dia": 48.9,
+            "mas_barato_del_dia": 56.4,
             "sale_el_mas_barato_a": "06:50"
           },
           "mas_temprano": "07:20",
