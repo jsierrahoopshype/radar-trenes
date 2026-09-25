@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-24T10:03:07+00:00",
+  "generado": "2026-09-25T10:22:15+00:00",
   "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
@@ -26,7 +26,7 @@
             "precio_persona": 24.3,
             "en_horario": true,
             "trenes_en_horario": 8,
-            "trenes_leidos": 22,
+            "trenes_leidos": 21,
             "mas_barato_del_dia": 12.35,
             "sale_el_mas_barato_a": "14:27"
           },
@@ -66,7 +66,7 @@
             "precio_persona": 12.25,
             "en_horario": true,
             "trenes_en_horario": 10,
-            "trenes_leidos": 35,
+            "trenes_leidos": 34,
             "mas_barato_del_dia": 12.25,
             "sale_el_mas_barato_a": "17:30"
           },
@@ -226,7 +226,7 @@
             "precio_persona": 39.0,
             "en_horario": true,
             "trenes_en_horario": 4,
-            "trenes_leidos": 15,
+            "trenes_leidos": 13,
             "mas_barato_del_dia": 15.0,
             "sale_el_mas_barato_a": "06:30"
           },
@@ -238,8 +238,8 @@
             "en_horario": true,
             "trenes_en_horario": 8,
             "trenes_leidos": 13,
-            "mas_barato_del_dia": 19.0,
-            "sale_el_mas_barato_a": "21:12"
+            "mas_barato_del_dia": 18.7,
+            "sale_el_mas_barato_a": "06:55"
           },
           "mas_temprano": "06:30",
           "mas_tardio": "21:12",
@@ -260,8 +260,8 @@
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "17:27",
-            "llegada": "19:07",
+            "salida": "18:27",
+            "llegada": "20:02",
             "tren": null,
             "precio_persona": 30.15,
             "en_horario": true,
@@ -284,7 +284,7 @@
           "mas_temprano": "06:27",
           "mas_tardio": "21:49",
           "limpio": true,
-          "fila_cruda_ida": "17:27 h 1 horas 40 minutos 19:07 h Precio desde 30,15 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "18:27 h 1 horas 35 minutos 20:02 h Precio desde 30,15 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
@@ -409,26 +409,26 @@
         },
         {
           "destino": "Ciudad Real",
-          "precio_por_persona": 43.8,
-          "precio_estimado_4": 175.2,
+          "precio_por_persona": 51.5,
+          "precio_estimado_4": 206.0,
           "referencia_total_4": 168,
           "referencia_por_persona": 42.0,
-          "variacion_pct": 4.3,
+          "variacion_pct": 22.6,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "21:05",
-            "llegada": "21:59",
+            "salida": "17:10",
+            "llegada": "18:08",
             "tren": null,
-            "precio_persona": 21.9,
+            "precio_persona": 29.6,
             "en_horario": true,
             "trenes_en_horario": 7,
             "trenes_leidos": 21,
-            "mas_barato_del_dia": 13.15,
-            "sale_el_mas_barato_a": "07:00"
+            "mas_barato_del_dia": 29.1,
+            "sale_el_mas_barato_a": "13:11"
           },
           "vuelta": {
             "salida": "11:31",
@@ -444,7 +444,7 @@
           "mas_temprano": "06:25",
           "mas_tardio": "22:38",
           "limpio": true,
-          "fila_cruda_ida": "21:05 h 0 horas 54 minutos 21:59 h Precio desde 21,90 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "17:10 h 0 horas 58 minutos 18:08 h Precio desde 29,60 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
@@ -489,11 +489,11 @@
         },
         {
           "destino": "Malaga",
-          "precio_por_persona": 65.4,
-          "precio_estimado_4": 261.6,
+          "precio_por_persona": 79.85,
+          "precio_estimado_4": 319.4,
           "referencia_total_4": 193,
           "referencia_por_persona": 48.25,
-          "variacion_pct": 35.5,
+          "variacion_pct": 65.5,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -503,7 +503,7 @@
             "salida": "21:20",
             "llegada": "00:10",
             "tren": null,
-            "precio_persona": 32.7,
+            "precio_persona": 40.85,
             "en_horario": true,
             "trenes_en_horario": 4,
             "trenes_leidos": 14,
@@ -511,20 +511,20 @@
             "sale_el_mas_barato_a": "07:20"
           },
           "vuelta": {
-            "salida": "11:56",
-            "llegada": "14:46",
+            "salida": "10:35",
+            "llegada": "13:49",
             "tren": null,
-            "precio_persona": 32.7,
+            "precio_persona": 39.0,
             "en_horario": true,
             "trenes_en_horario": 9,
             "trenes_leidos": 12,
             "mas_barato_del_dia": 32.7,
-            "sale_el_mas_barato_a": "07:25"
+            "sale_el_mas_barato_a": "09:27"
           },
           "mas_temprano": "07:20",
           "mas_tardio": "20:00",
           "limpio": true,
-          "fila_cruda_ida": "21:20 h 2 horas 50 minutos 00:10 h Precio desde 32,70 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "21:20 h 2 horas 50 minutos 00:10 h Precio desde 40,85 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
@@ -540,8 +540,8 @@
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "17:27",
-            "llegada": "19:56",
+            "salida": "19:34",
+            "llegada": "22:08",
             "tren": null,
             "precio_persona": 28.25,
             "en_horario": true,
@@ -564,7 +564,7 @@
           "mas_temprano": "07:27",
           "mas_tardio": "21:03",
           "limpio": true,
-          "fila_cruda_ida": "17:27 h 2 horas 29 minutos 19:56 h Precio más bajo Precio desde 28,25 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "19:34 h 2 horas 34 minutos 22:08 h Precio más bajo Precio desde 28,25 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
@@ -620,8 +620,8 @@
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "17:27",
-            "llegada": "20:26",
+            "salida": "18:27",
+            "llegada": "21:08",
             "tren": null,
             "precio_persona": 31.15,
             "en_horario": true,
@@ -644,31 +644,31 @@
           "mas_temprano": "07:27",
           "mas_tardio": "20:34",
           "limpio": true,
-          "fila_cruda_ida": "17:27 h 2 horas 59 minutos 20:26 h Precio más bajo Precio desde 31,15 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "18:27 h 2 horas 41 minutos 21:08 h Precio más bajo Precio desde 31,15 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
           "destino": "Barcelona",
-          "precio_por_persona": 68.7,
-          "precio_estimado_4": 274.8,
+          "precio_por_persona": 68.15,
+          "precio_estimado_4": 272.6,
           "referencia_total_4": 221,
           "referencia_por_persona": 55.25,
-          "variacion_pct": 24.3,
+          "variacion_pct": 23.3,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "17:27",
-            "llegada": "21:11",
+            "salida": "17:57",
+            "llegada": "20:59",
             "tren": null,
-            "precio_persona": 34.35,
+            "precio_persona": 33.8,
             "en_horario": true,
             "trenes_en_horario": 4,
             "trenes_leidos": 23,
-            "mas_barato_del_dia": 28.65,
-            "sale_el_mas_barato_a": "20:30"
+            "mas_barato_del_dia": 33.8,
+            "sale_el_mas_barato_a": "07:57"
           },
           "vuelta": {
             "salida": "14:00",
@@ -684,47 +684,47 @@
           "mas_temprano": "06:27",
           "mas_tardio": "20:00",
           "limpio": true,
-          "fila_cruda_ida": "17:27 h 3 horas 44 minutos 21:11 h Precio desde 34,35 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "17:57 h 3 horas 2 minutos 20:59 h Precio más bajo Precio desde 33,80 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
           "destino": "Sevilla",
-          "precio_por_persona": 73.25,
-          "precio_estimado_4": 293.0,
+          "precio_por_persona": 77.6,
+          "precio_estimado_4": 310.4,
           "referencia_total_4": 224,
           "referencia_por_persona": 56.0,
-          "variacion_pct": 30.8,
+          "variacion_pct": 38.6,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
           "pasajeros_leidos": "2 adultos, 2 niños / 2 adultos, 2 niños",
           "aviso": null,
           "ida": {
-            "salida": "19:00",
-            "llegada": "21:39",
+            "salida": "18:30",
+            "llegada": "21:12",
             "tren": null,
-            "precio_persona": 31.05,
+            "precio_persona": 38.8,
             "en_horario": true,
             "trenes_en_horario": 5,
             "trenes_leidos": 24,
-            "mas_barato_del_dia": 23.3,
-            "sale_el_mas_barato_a": "07:00"
+            "mas_barato_del_dia": 31.05,
+            "sale_el_mas_barato_a": "08:00"
           },
           "vuelta": {
-            "salida": "10:52",
-            "llegada": "13:33",
+            "salida": "11:32",
+            "llegada": "14:11",
             "tren": null,
-            "precio_persona": 42.2,
+            "precio_persona": 38.8,
             "en_horario": true,
             "trenes_en_horario": 17,
             "trenes_leidos": 22,
-            "mas_barato_del_dia": 42.2,
-            "sale_el_mas_barato_a": "06:05"
+            "mas_barato_del_dia": 38.8,
+            "sale_el_mas_barato_a": "07:18"
           },
           "mas_temprano": "07:00",
           "mas_tardio": "20:52",
           "limpio": true,
-          "fila_cruda_ida": "19:00 h 2 horas 39 minutos 21:39 h Precio desde 31,05 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "18:30 h 2 horas 42 minutos 21:12 h Precio desde 38,80 € Plaza H disponible Cero emisiones",
           "error": null
         },
         {
@@ -752,7 +752,7 @@
             "precio_persona": 36.15,
             "en_horario": false,
             "trenes_en_horario": 0,
-            "trenes_leidos": 13,
+            "trenes_leidos": 12,
             "mas_barato_del_dia": 36.15,
             "sale_el_mas_barato_a": "07:27"
           },
@@ -764,7 +764,7 @@
             "en_horario": true,
             "trenes_en_horario": 6,
             "trenes_leidos": 10,
-            "mas_barato_del_dia": 36.15,
+            "mas_barato_del_dia": 48.2,
             "sale_el_mas_barato_a": "05:44"
           },
           "mas_temprano": "06:27",
@@ -775,11 +775,11 @@
         },
         {
           "destino": "Granada",
-          "precio_por_persona": 140.2,
-          "precio_estimado_4": 560.8,
+          "precio_por_persona": 165.4,
+          "precio_estimado_4": 661.6,
           "referencia_total_4": 351,
           "referencia_por_persona": 87.75,
-          "variacion_pct": 59.8,
+          "variacion_pct": 88.5,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -789,7 +789,7 @@
             "salida": "17:05",
             "llegada": "21:52",
             "tren": null,
-            "precio_persona": 65.5,
+            "precio_persona": 83.9,
             "en_horario": true,
             "trenes_en_horario": 1,
             "trenes_leidos": 8,
@@ -797,10 +797,10 @@
             "sale_el_mas_barato_a": "08:00"
           },
           "vuelta": {
-            "salida": "16:22",
-            "llegada": "21:46",
+            "salida": "15:00",
+            "llegada": "18:39",
             "tren": null,
-            "precio_persona": 74.7,
+            "precio_persona": 81.5,
             "en_horario": true,
             "trenes_en_horario": 5,
             "trenes_leidos": 8,
@@ -810,7 +810,7 @@
           "mas_temprano": "07:20",
           "mas_tardio": "18:17",
           "limpio": true,
-          "fila_cruda_ida": "17:05 h 4 horas 47 minutos 21:52 h Enlace 1 horas 2 minutos Precio desde 65,50 € Plaza H disponible Cero emisiones",
+          "fila_cruda_ida": "17:05 h 4 horas 47 minutos 21:52 h Enlace 1 horas 2 minutos Precio desde 83,90 € Plaza H disponible Cero emisiones",
           "error": null
         }
       ]
@@ -838,7 +838,7 @@
             "precio_persona": 24.7,
             "en_horario": true,
             "trenes_en_horario": 8,
-            "trenes_leidos": 22,
+            "trenes_leidos": 21,
             "mas_barato_del_dia": 12.35,
             "sale_el_mas_barato_a": "14:27"
           },
@@ -981,11 +981,11 @@
         },
         {
           "destino": "Albacete",
-          "precio_por_persona": 45.65,
-          "precio_estimado_4": 182.6,
+          "precio_por_persona": 49.05,
+          "precio_estimado_4": 196.2,
           "referencia_total_4": 108,
           "referencia_por_persona": 27.0,
-          "variacion_pct": 69.1,
+          "variacion_pct": 81.7,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -999,19 +999,19 @@
             "en_horario": true,
             "trenes_en_horario": 6,
             "trenes_leidos": 14,
-            "mas_barato_del_dia": 19.0,
+            "mas_barato_del_dia": 25.0,
             "sale_el_mas_barato_a": "06:15"
           },
           "vuelta": {
-            "salida": "12:30",
-            "llegada": "14:08",
+            "salida": "19:35",
+            "llegada": "21:08",
             "tren": "AVANT",
-            "precio_persona": 15.0,
+            "precio_persona": 18.4,
             "en_horario": true,
             "trenes_en_horario": 10,
             "trenes_leidos": 14,
-            "mas_barato_del_dia": 15.0,
-            "sale_el_mas_barato_a": "12:30"
+            "mas_barato_del_dia": 18.4,
+            "sale_el_mas_barato_a": "19:35"
           },
           "mas_temprano": "06:15",
           "mas_tardio": "22:00",
@@ -1038,7 +1038,7 @@
             "precio_persona": 39.0,
             "en_horario": true,
             "trenes_en_horario": 4,
-            "trenes_leidos": 15,
+            "trenes_leidos": 14,
             "mas_barato_del_dia": 25.0,
             "sale_el_mas_barato_a": "06:30"
           },
@@ -1181,11 +1181,11 @@
         },
         {
           "destino": "Murcia",
-          "precio_por_persona": 57.4,
-          "precio_estimado_4": 229.6,
+          "precio_por_persona": 61.4,
+          "precio_estimado_4": 245.6,
           "referencia_total_4": 165,
           "referencia_por_persona": 41.25,
-          "variacion_pct": 39.2,
+          "variacion_pct": 48.8,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -1199,18 +1199,18 @@
             "en_horario": true,
             "trenes_en_horario": 2,
             "trenes_leidos": 6,
-            "mas_barato_del_dia": 19.0,
+            "mas_barato_del_dia": 25.0,
             "sale_el_mas_barato_a": "06:15"
           },
           "vuelta": {
             "salida": "10:32",
             "llegada": "14:08",
             "tren": null,
-            "precio_persona": 15.0,
+            "precio_persona": 19.0,
             "en_horario": true,
             "trenes_en_horario": 5,
             "trenes_leidos": 7,
-            "mas_barato_del_dia": 15.0,
+            "mas_barato_del_dia": 19.0,
             "sale_el_mas_barato_a": "10:32"
           },
           "mas_temprano": "06:15",
@@ -1501,11 +1501,11 @@
         },
         {
           "destino": "Sevilla",
-          "precio_por_persona": 100.95,
-          "precio_estimado_4": 403.8,
+          "precio_por_persona": 105.05,
+          "precio_estimado_4": 420.2,
           "referencia_total_4": 224,
           "referencia_por_persona": 56.0,
-          "variacion_pct": 80.3,
+          "variacion_pct": 87.6,
           "unidad": "precio 'desde' por persona, ida + vuelta",
           "metodo": "solo_ida+solo_ida",
           "pasajeros_aplicados": true,
@@ -1523,10 +1523,10 @@
             "sale_el_mas_barato_a": "08:00"
           },
           "vuelta": {
-            "salida": "11:32",
-            "llegada": "14:11",
+            "salida": "19:25",
+            "llegada": "22:19",
             "tren": null,
-            "precio_persona": 46.6,
+            "precio_persona": 50.7,
             "en_horario": true,
             "trenes_en_horario": 15,
             "trenes_leidos": 21,
