@@ -1,5 +1,5 @@
 {
-  "generado": "2026-09-25T10:22:15+00:00",
+  "generado": "2026-09-26T10:06:31+00:00",
   "alerta": "2 de 44 rutas han fallado.",
   "unidad": "precio 'desde' por persona (ida + vuelta). La referencia de la tabla es total de 4, por eso se compara contra referencia/4.",
   "ventanas": {
@@ -26,7 +26,7 @@
             "precio_persona": 24.3,
             "en_horario": true,
             "trenes_en_horario": 8,
-            "trenes_leidos": 21,
+            "trenes_leidos": 22,
             "mas_barato_del_dia": 12.35,
             "sale_el_mas_barato_a": "14:27"
           },
@@ -66,7 +66,7 @@
             "precio_persona": 12.25,
             "en_horario": true,
             "trenes_en_horario": 10,
-            "trenes_leidos": 34,
+            "trenes_leidos": 35,
             "mas_barato_del_dia": 12.25,
             "sale_el_mas_barato_a": "17:30"
           },
@@ -226,7 +226,7 @@
             "precio_persona": 39.0,
             "en_horario": true,
             "trenes_en_horario": 4,
-            "trenes_leidos": 13,
+            "trenes_leidos": 15,
             "mas_barato_del_dia": 15.0,
             "sale_el_mas_barato_a": "06:30"
           },
@@ -586,7 +586,7 @@
             "precio_persona": 18.1,
             "en_horario": true,
             "trenes_en_horario": 15,
-            "trenes_leidos": 42,
+            "trenes_leidos": 43,
             "mas_barato_del_dia": 7.0,
             "sale_el_mas_barato_a": "14:23"
           },
@@ -838,7 +838,7 @@
             "precio_persona": 24.7,
             "en_horario": true,
             "trenes_en_horario": 8,
-            "trenes_leidos": 21,
+            "trenes_leidos": 22,
             "mas_barato_del_dia": 12.35,
             "sale_el_mas_barato_a": "14:27"
           },
@@ -1038,7 +1038,7 @@
             "precio_persona": 39.0,
             "en_horario": true,
             "trenes_en_horario": 4,
-            "trenes_leidos": 14,
+            "trenes_leidos": 15,
             "mas_barato_del_dia": 25.0,
             "sale_el_mas_barato_a": "06:30"
           },
@@ -1519,7 +1519,7 @@
             "en_horario": true,
             "trenes_en_horario": 5,
             "trenes_leidos": 22,
-            "mas_barato_del_dia": 31.05,
+            "mas_barato_del_dia": 37.2,
             "sale_el_mas_barato_a": "08:00"
           },
           "vuelta": {
